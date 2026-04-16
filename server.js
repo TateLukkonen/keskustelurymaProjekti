@@ -109,7 +109,7 @@ app.post('/login', async (req, res) => {
                 console.log('Passwords match');
                 loggedIn = true
                 req.session.user = { email: email } 
-                res.redirect('/users')
+                res.redirect('/users') // main chat view
             }
             else {
                 console.log('Passwords do not match');
