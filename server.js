@@ -59,6 +59,8 @@ app.get('/', isLoggedIn, async (req, res) => {
     res.redirect('users')
 })
 
+
+//  EXAMPLE GET AND POST METHODS BELOW
 app.get('/users', isLoggedIn, async (req, res) => {
     let connection;
     try {

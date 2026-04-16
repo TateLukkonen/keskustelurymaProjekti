@@ -13,6 +13,7 @@ const getConnection = async () => {
     }
 }
 
+//  EXAMPLE FUNCTION BELOW 
 const getUsers = async () => {
     try {
         const connection = await getConnection()
