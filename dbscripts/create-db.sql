@@ -38,6 +38,11 @@ CREATE TABLE friend_list (
 	
 	FOREIGN KEY (friend_list_id)
 	REFERENCES users (user_id)
+    ON DELETE CASCADE,
+
+	FOREIGN KEY (user_id)
+	REFERENCES users (user_id)
+    ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS block_list;
@@ -47,6 +52,11 @@ CREATE TABLE block_list (
 	
 	FOREIGN KEY (block_list_id)
 	REFERENCES users (user_id)
+    ON DELETE CASCADE,
+
+	FOREIGN KEY (user_id)
+	REFERENCES users (user_id)
+    ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS  dms;
@@ -59,25 +69,29 @@ CREATE TABLE dms (
     UNIQUE (user_1, user_2),
 	
 	FOREIGN KEY (user_1)
-	REFERENCES users (user_id),
+	REFERENCES users (user_id)
+    ON DELETE CASCADE,
 	
 	FOREIGN KEY (user_2)
 	REFERENCES users (user_id)
+    ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS dm_messages;
 CREATE TABLE dm_messages (
 	message_id INT UNIQUE NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	dm_id INT NOT NULL,
-	user_id INT NOT NULL,
+	user_id INT NULL,
 	message MEDIUMTEXT NOT NULL,
 	creation_date DATETIME NOT NULL,
 	
 	FOREIGN KEY (dm_id)
-	REFERENCES dms (dm_id),
+	REFERENCES dms (dm_id)
+    ON DELETE CASCADE,
 	
 	FOREIGN KEY (user_id)
 	REFERENCES users (user_id)
+    ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS ban_list;
@@ -88,10 +102,12 @@ CREATE TABLE ban_list (
 	ban_duration DATETIME NULL,
 	
 	FOREIGN KEY (server_id)
-	REFERENCES server (server_id),
+	REFERENCES server (server_id)
+    ON DELETE CASCADE,
 	
 	FOREIGN KEY (user_id)
 	REFERENCES users (user_id)
+    ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS member_list;
@@ -104,10 +120,12 @@ CREATE TABLE member_list (
 	join_date DATETIME NOT NULL,
 	
 	FOREIGN KEY (server_id)
-	REFERENCES server (server_id),
+	REFERENCES server (server_id)
+    ON DELETE CASCADE,
 	
 	FOREIGN KEY (user_id)
 	REFERENCES users (user_id)
+    ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS channel;
@@ -120,20 +138,23 @@ CREATE TABLE channel (
 	
 	FOREIGN KEY (server_id)
 	REFERENCES server (server_id)
+    ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS channel_messages;
 CREATE TABLE channel_messages (
 	message_id INT UNIQUE NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	channel_id INT NOT NULL,
-	user_id INT NOT NULL,
+	user_id INT NULL,
 	message MEDIUMTEXT NOT NULL,
 	creation_date DATETIME NOT NULL,
 	
 	FOREIGN KEY (channel_id)
-	REFERENCES channel (channel_id),
+	REFERENCES channel (channel_id)
+    ON DELETE CASCADE,
 	
 	FOREIGN KEY (user_id)
 	REFERENCES users (user_id)
+    ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
