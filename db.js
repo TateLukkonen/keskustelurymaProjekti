@@ -39,6 +39,91 @@ const getUsers = async () => {
     }
 }
 
+const getChannelMessages = async () => {
+    try {
+        const connection = await getConnection()
+        const sql = `
+                    SELECT channel_messages.message_id,
+                    users.display_name,
+                    channel_messages.user_id,
+                    channel_messages.message,
+                    channel_messages.creation_date
+                    FROM channel_messages
+                    JOIN users
+                    WHERE channel_messages.channel_id = 1                    
+                    `
+        const [users] = await connection.execute(sql)
+        connection.release()
+        return users
+    } catch (error) {
+        console.error('Error getting channel messages:', error)
+        throw error
+    }
+}
+
+const getChannelMessage = async (message_id) => {
+    try {
+        const connection = await getConnection()
+        const sql = `
+                    SELECT channel_messages.message_id,
+                    users.display_name,
+                    channel_messages.user_id,
+                    channel_messages.message,
+                    channel_messages.creation_date
+                    FROM channel_messages
+                    JOIN users
+                    ON users.user_id = channel_messages.user_id
+                    WHERE channel_messages.channel_id = 1 
+                    AND channel_messages.message_id = ?                   
+                    `
+        const [users] = await connection.execute(sql, [message_id])
+        connection.release()
+        return users
+    } catch (error) {
+        console.error('Error getting channel messages:', error)
+        throw error
+    }
+}
+
+const setChannelMessages = async (message) => {
+    try {
+        const connection = await getConnection()
+        const sql = `
+                    INSERT INTO channel_messages (channel_id, user_id, message, creation_date) VALUES
+                    (1, 1, ?, NOW())                    
+                    `
+        const [result] = await connection.execute(sql, [message])
+        const newMessage = {
+            message_id: result.insertId
+        }
+
+        connection.release()
+        return newMessage
+    } catch (error) {
+        console.error('Error getting channel messages:', error)
+        throw error
+    }
+}
+
+const deleteMessage = async (message_id) => {
+    try {
+        const connection = await getConnection()
+        const sql = `
+                    DELETE FROM channel_messages
+                    WHERE message_id = ?                   
+                    `
+        await connection.execute(sql, [message_id])
+        connection.release()
+    } catch (error) {
+        console.error('Error getting channel messages:', error)
+        throw error
+    }
+}
+
 export default {
-    getUsers
+    getUsers,
+    getChannelMessages,
+    getChannelMessage,
+    setChannelMessages,
+    deleteMessage
 }

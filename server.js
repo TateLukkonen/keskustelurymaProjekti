@@ -4,7 +4,8 @@ import session from 'express-session'
 import mysql from 'mysql2/promise'
 import path from 'node:path'
 import bcrypt from 'bcrypt'
-
+import http from 'node:http'
+import { Server } from 'socket.io'
 
 import config from './config.json' with { type: 'json' }
 import dbconfig from './dbconfig.json' with { type: 'json' }
@@ -12,7 +13,7 @@ import db from './db.js'
 import { fileURLToPath } from 'node:url'
 
 // Lets
-let loggedIn = false
+//let loggedIn = false
 
 // Constants
 const { host, port } = config
@@ -24,6 +25,9 @@ const dbUser = dbconfig.user
 const dbPwd = dbconfig.password
 
 const app = express()
+
+const server = http.createServer(app)
+const io = new Server(server)
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -47,7 +51,7 @@ app.use('/styles', express.static('public/styles'));
 
 // Functions
 function isLoggedIn(req, res, next) {
-    if (!loggedIn) {
+    if (!req.session.user) {
         return res.redirect('/login')
     } else {
         next()
@@ -55,13 +59,16 @@ function isLoggedIn(req, res, next) {
 }
 
 // Paths
-app.get('/', isLoggedIn, async (req, res) => {
-    res.redirect('users')
+app.get('/', isLoggedIn, (req, res) => {
+    res.redirect('/main_page')
 })
 
+app.get('/login', (req, res) => {
+    res.render('login', { path: req.path })
+})
 
 //  EXAMPLE GET AND POST METHODS BELOW
-app.get('/users', isLoggedIn, async (req, res) => {
+app.get('/main_page', isLoggedIn, async (req, res) => {
     let connection;
     try {
         connection = await mysql.createConnection({
@@ -71,9 +78,9 @@ app.get('/users', isLoggedIn, async (req, res) => {
         database: dbName
         });
           
-        const rows = await db.getUsers()
+        const channelMsg = await db.getChannelMessages()
         
-        res.render('users', { rows: rows, path: req.path })
+        res.render('main_page', { channelMessages: channelMsg, path: req.path })
     }
     catch (err) {
         console.error('Database error: ' + err);
@@ -89,7 +96,49 @@ app.get('/users', isLoggedIn, async (req, res) => {
     }
 })
 
+// Socket.IO events
+
+io.on('connection', (socket) => {
+  console.log('a user connected');
+  socket.on('disconnect', () => {
+    console.log('user disconnected');
+  });
+
+  socket.on('chat message', async (msg) => {
+    const msgId = await db.setChannelMessages(msg)
+    const msgInfo = await db.getChannelMessage(msgId.message_id)
+    io.emit('chat message', msgInfo[0])
+  })
+
+  socket.on('delete message', async (message_id) => {
+    await db.deleteMessage(message_id)
+    io.emit('delete message', message_id)
+  })
+});
+
+// OLD POST METHODS
+
+/*
+app.post('/main_page_send_message', async (req, res) => {
+    const message = req.body.message
+
+    await db.setChannelMessages(message)
+
+    res.redirect('/main_page')
+})
+
+app.post('/delete_message', async (req, res) => {
+    const message_id = req.body.message_id
+
+    await db.deleteMessage(message_id)
+
+    res.redirect('/main_page')
+})*/
+
 app.post('/login', async (req, res) => {
+    req.session.user = { user: 'user' } 
+    res.redirect('/main_page') // main chat view    
+    /*
     if (req.body.email.length != 0 && req.body.password.length != 0) {
         const email = req.body.email
         const password = req.body.password
@@ -123,5 +172,8 @@ app.post('/login', async (req, res) => {
     else {
         console.log('email or password not filled in');
         res.redirect('/login')
-    }
+    */
+
 })
+
+server.listen(port, host, (req, res) => {console.log(`Server running at http://${host}:${port}`)})

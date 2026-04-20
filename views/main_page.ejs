@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>EXample page for backend purpose testing until templates are created</h1>
+
+    <form id="sendMessage">
+        <input type="text" name="message" id="inputMessage" class="message" placeholder="type message">
+        <button type="submit">Send message</button>
+    </form>
+    
+    <div class="messages">
+        <% for (msg of channelMessages) { %>
+            <%- include('message', {info: msg}) %>
+        <% } %>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let socket = io()
+
+        let form = document.getElementById('sendMessage')
+        let input = document.getElementById('inputMessage')
+
+        let messages = document.querySelector('.messages')
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault()
+            if (input.value) {
+                socket.emit('chat message', input.value)
+                input.value = ''
+            }
+        })
+
+        socket.on('chat message', function(msg) {
+            const formMsg = document.createElement('div')
+            formMsg.classList.add('message')
+            formMsg.id = msg.message_id
+
+            const div = document.createElement('div')
+
+            const h3 = document.createElement('h3')
+            h3.textContent = `User: ${msg.display_name}`
+
+            const button = document.createElement('button')
+            button.type = 'submit'
+            button.textContent = 'X'
+            button.classList.add('deleteMsgButton')
+
+            div.appendChild(h3)
+            div.appendChild(button)
+
+            const p1 = document.createElement('p')
+            let datetime = msg.creation_date
+            let newDatetime = datetime.slice(0, 19).replaceAll('-','.').replace('T', ', ')
+
+            let newYear = newDatetime.slice(0, 4)
+            let newMonth = newDatetime.slice(5, 7)
+            let newDay = newDatetime.slice(8, 10)
+            let newDate = newDay + '/' + newMonth + '/' + newYear
+
+            let newTime = newDatetime.slice(12, 20)
+
+            let formattedDatetime = newTime + ' (' + newDate + ')'
+            p1.textContent = `Sent at: ${formattedDatetime}`
+
+            const p2 = document.createElement('p')
+            p2.textContent = `Message: ${msg.message}`
+
+            formMsg.appendChild(div)
+            formMsg.appendChild(p1)
+            formMsg.appendChild(p2)
+
+            messages.appendChild(formMsg)   
+        })
+
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('deleteMsgButton')) {
+                const container = e.target.closest('.message')
+                socket.emit('delete message', container.id)
+            }
+        })
+
+        socket.on('delete message', function(msgId) {
+            document.getElementById(msgId)?.remove()
+        })
+
+    </script>
+</body>
+</html>

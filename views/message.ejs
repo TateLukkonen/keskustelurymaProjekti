@@ -1,0 +1,25 @@
+<div class="message" id="<%= msg.message_id %>">
+    <div>
+        <h3>User: <%= msg.display_name %></h3>
+        <button class="deleteMsgButton" type="submit">X</button>
+    </div>
+
+    <%
+        let datetime = new Date(msg.creation_date).toISOString()
+
+        let newDatetime = datetime.slice(0, 19).replaceAll('-', '.').replace('T', ', ')
+
+        let newYear = newDatetime.slice(0, 4)
+        let newMonth = newDatetime.slice(5, 7)
+        let newDay = newDatetime.slice(8, 10)
+
+        let newDate = newDay + '/' + newMonth + '/' + newYear
+
+        let newTime = newDatetime.slice(12, 20)
+
+        let formattedDatetime = newTime + ' (' + newDate + ')'
+    %>
+
+    <p>Sent at: <%= formattedDatetime %></p>
+    <p>Message: <%= msg.message %></p>
+</div>
