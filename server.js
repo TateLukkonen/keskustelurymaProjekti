@@ -67,53 +67,68 @@ app.get('/login', (req, res) => {
     res.render('login', { path: req.path })
 })
 
+app.get("/create_server_settings", (req, res) => {
+  res.render("create_server_settings", { path: req.path });
+});
+
 //  EXAMPLE GET AND POST METHODS BELOW
-app.get('/main_page', isLoggedIn, async (req, res) => {
-    let connection;
+app.get("/main_page", isLoggedIn, async (req, res) => {
+  let connection;
+  try {
+    connection = await mysql.createConnection({
+      host: dbHost,
+      user: dbUser,
+      password: dbPwd,
+      database: dbName,
+    });
+
+    const channelMsg = await db.getChannelMessages();
+    const servers = await db.getServers();
+
+    res.render("main_page", {
+      channelMessages: channelMsg,
+      servers: servers,
+      path: req.path,
+    });
+  } catch (err) {
+    console.error("Database error: " + err);
+    res.status(500).send("Internal Server Error");
+  }
+  if (connection) {
     try {
-        connection = await mysql.createConnection({
-        host: dbHost,
-        user: dbUser,
-        password: dbPwd,
-        database: dbName
-        });
-          
-        const channelMsg = await db.getChannelMessages()
-        
-        res.render('main_page', { channelMessages: channelMsg, path: req.path })
+      await connection.end();
+    } catch (closeError) {
+      console.error("Error closing connection:", closeError);
     }
-    catch (err) {
-        console.error('Database error: ' + err);
-        res.status(500).send('Internal Server Error');
-    }
-    if (connection) {
-        try {
-            await connection.end();
-        } 
-        catch (closeError) {
-            console.error('Error closing connection:', closeError);
-        }
-    }
-})
+  }
+});
 
 // Socket.IO events
 
-io.on('connection', (socket) => {
-  console.log('a user connected');
-  socket.on('disconnect', () => {
-    console.log('user disconnected');
+io.on("connection", (socket) => {
+  console.log("a user connected");
+  socket.on("disconnect", () => {
+    console.log("user disconnected");
   });
 
-  socket.on('chat message', async (msg) => {
-    const msgId = await db.setChannelMessages(msg)
-    const msgInfo = await db.getChannelMessage(msgId.message_id)
-    io.emit('chat message', msgInfo[0])
-  })
+  socket.on("chat message", async (msg) => {
+    const msgId = await db.setChannelMessages(msg);
+    const msgInfo = await db.getChannelMessage(msgId.message_id);
+    io.emit("chat message", msgInfo[0]);
+  });
 
-  socket.on('delete message', async (message_id) => {
-    await db.deleteMessage(message_id)
-    io.emit('delete message', message_id)
-  })
+  socket.on("delete message", async (message_id) => {
+    await db.deleteMessage(message_id);
+    io.emit("delete message", message_id);
+  });
+
+  socket.on("create-server", async (data) => {
+    console.log("New server:", data);
+
+    await db.createServer(data);
+
+    io.emit("server-created", data);
+  });
 });
 
 // OLD POST METHODS
