@@ -1,2 +1,4 @@
 node_modules
 dbconfig.json
+package-lock.json
+package.json

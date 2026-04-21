@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div class="register-container">
+      <form action="/register" method="POST">
+        <div class="form-section">
+          <input
+            type="text"
+            name="full_name"
+            placeholder="Full name"
+            required
+          />
+          <input type="email" name="email" placeholder="email" required />
+          <input type="password" name="password" placeholder="Pass" required />
+          <input
+            type="password"
+            name="confirm_password"
+            placeholder="Again"
+            required
+          />
+        </div>
+
+        <hr class="divider" />
+
+        <div class="form-section">
+          <input type="text" name="username" placeholder="User" required />
+          <input
+            type="text"
+            name="display_name"
+            placeholder="display"
+            required
+          />
+
+          <div class="pfp-group">
+            <label for="pfp">PICTURE</label>
+            <input
+              type="text"
+              name="pfp_url"
+              placeholder="Paste image URL here"
+            />
+          </div>
+
+          <textarea name="bio" placeholder="BIO" rows="4"></textarea>
+        </div>
+
+        <button type="submit">REGISTER</button>
+      </form>
+    </div>
+  </body>
+</html>

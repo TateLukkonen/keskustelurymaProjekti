@@ -4,7 +4,8 @@
     "ejs": "^5.0.2",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
-    "mysql2": "^3.22.1",
+    "mysql2": "^3.22.2",
+    "nodemon": "^3.1.14",
     "socket.io": "^4.8.3"
   },
   "type": "module"
