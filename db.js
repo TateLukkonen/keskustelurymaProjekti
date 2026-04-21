@@ -80,7 +80,7 @@ const getChannelMessage = async (message_id) => {
         connection.release()
         return users
     } catch (error) {
-        console.error('Error getting channel messages:', error)
+        console.error('Error getting channel message:', error)
         throw error
     }
 }
@@ -100,7 +100,7 @@ const setChannelMessages = async (message) => {
         connection.release()
         return newMessage
     } catch (error) {
-        console.error('Error getting channel messages:', error)
+        console.error('Error setting channel messages:', error)
         throw error
     }
 }
@@ -115,7 +115,22 @@ const deleteMessage = async (message_id) => {
         await connection.execute(sql, [message_id])
         connection.release()
     } catch (error) {
-        console.error('Error getting channel messages:', error)
+        console.error('Error deleting message:', error)
+        throw error
+    }
+}
+
+const registerAccount = async (full_name, username, display_name, email, password, admin, creation_date, blacklist, servers_created, servers_joined, status, avatar_url, bio) => {
+    try {
+        const connection = await getConnection()
+        const sql = `
+                    INSERT INTO users (full_name, username, display_name, email, password, admin, creation_date, blacklist, servers_created, servers_joined, status, avatar_url, bio)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    `
+        await connection.execute(sql, [full_name, username, display_name, email, password, admin, creation_date, blacklist, servers_created, servers_joined, status, avatar_url, bio])
+        connection.release()
+    } catch (error) {
+        console.error('Error registering account:', error)
         throw error
     }
 }
@@ -125,5 +140,6 @@ export default {
     getChannelMessages,
     getChannelMessage,
     setChannelMessages,
-    deleteMessage
+    deleteMessage,
+    registerAccount
 }
