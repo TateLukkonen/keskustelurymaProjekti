@@ -1,0 +1,36 @@
+.register-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+form {
+  display: flex;
+  flex-flow: column nowrap;
+  width: 100%;
+  max-width: 300px;
+  gap: 15px;
+}
+
+.form-section {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 10px;
+  width: 100%;
+}
+
+input,
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+}
+
+.pfp-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}

@@ -1,74 +1,79 @@
 // Imports
-import express from 'express'
-import session from 'express-session'
-import mysql from 'mysql2/promise'
-import path from 'node:path'
-import bcrypt from 'bcrypt'
-import http from 'node:http'
-import { Server } from 'socket.io'
+import express from "express";
+import session from "express-session";
+import mysql from "mysql2/promise";
+import path from "node:path";
+import bcrypt from "bcrypt";
+import http from "node:http";
+import { Server } from "socket.io";
 
-import config from './config.json' with { type: 'json' }
-import dbconfig from './dbconfig.json' with { type: 'json' }
-import db from './db.js'
-import { fileURLToPath } from 'node:url'
+import config from "./config.json" with { type: "json" };
+import dbconfig from "./dbconfig.json" with { type: "json" };
+import db from "./db.js";
+import { fileURLToPath } from "node:url";
 
 // Lets
 //let loggedIn = false
 
 // Constants
-const { host, port } = config
+const { host, port } = config;
 
 // Database information
-const dbHost = dbconfig.host
-const dbName= dbconfig.database
-const dbUser = dbconfig.user
-const dbPwd = dbconfig.password
+const dbHost = dbconfig.host;
+const dbName = dbconfig.database;
+const dbUser = dbconfig.user;
+const dbPwd = dbconfig.password;
 
-const app = express()
+const app = express();
 
-const server = http.createServer(app)
-const io = new Server(server)
+const server = http.createServer(app);
+const io = new Server(server);
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Server configuration
-app.set('view engine', 'ejs')
-app.set('views', path.join(__dirname, 'views'))
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 
 // Static
-app.use(express.urlencoded({extended: true}))
-app.use(session({
-  secret: "supersecretkey",
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: false }
-}));
+app.use(express.urlencoded({ extended: true }));
+app.use(
+  session({
+    secret: "supersecretkey",
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false },
+  }),
+);
 
-app.use(express.static('public'))
-app.use('/styles', express.static('public/styles'));
-
+app.use(express.static("public"));
+app.use("/styles", express.static("public/styles"));
 
 // Functions
 function isLoggedIn(req, res, next) {
-    if (!req.session.user) {
-        return res.redirect('/login')
-    } else {
-        next()
-    }
+  if (!req.session.user) {
+    return res.redirect("/login");
+  } else {
+    next();
+  }
 }
 
 // Paths
-app.get('/', isLoggedIn, (req, res) => {
-    res.redirect('/main_page')
-})
+app.get("/", isLoggedIn, (req, res) => {
+  res.redirect("/main_page");
+});
 
-app.get('/login', (req, res) => {
-    res.render('login', { path: req.path })
-})
+app.get("/login", (req, res) => {
+  res.render("login", { path: req.path });
+});
 
 app.get("/create_server_settings", (req, res) => {
   res.render("create_server_settings", { path: req.path });
+});
+
+app.get("/register", (req, res) => {
+  res.render("register");
 });
 
 //  EXAMPLE GET AND POST METHODS BELOW
@@ -150,10 +155,15 @@ app.post('/delete_message', async (req, res) => {
     res.redirect('/main_page')
 })*/
 
-app.post('/login', async (req, res) => {
-    req.session.user = { user: 'user' } 
-    res.redirect('/main_page') // main chat view    
-    /*
+app.post("/register", upload.single("pfp"), async (req, res) => {
+  const { full_name, email, password, username, display_name, bio } = req.body;
+  const pfp_path = req.file ? `/uploads/${req.file.filename}` : null;
+});
+
+app.post("/login", async (req, res) => {
+  req.session.user = { user: "user" };
+  res.redirect("/main_page"); // main chat view
+  /*
     if (req.body.email.length != 0 && req.body.password.length != 0) {
         const email = req.body.email
         const password = req.body.password
@@ -188,7 +198,8 @@ app.post('/login', async (req, res) => {
         console.log('email or password not filled in');
         res.redirect('/login')
     */
+});
 
-})
-
-server.listen(port, host, (req, res) => {console.log(`Server running at http://${host}:${port}`)})
+server.listen(port, host, (req, res) => {
+  console.log(`Server running at http://${host}:${port}`);
+});

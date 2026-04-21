@@ -3,24 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <title>Sign Up</title>
-    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/styles/styles.css" />
   </head>
   <body>
     <div class="register-container">
-      <form action="/register" method="POST">
+      <form action="/register" method="POST" enctype="multipart/form-data">
         <div class="form-section">
+          <input type="text" name="full_name" placeholder="Name" required />
+          <input type="email" name="email" placeholder="Email" required />
           <input
-            type="text"
-            name="full_name"
-            placeholder="Full name"
+            type="password"
+            name="password"
+            placeholder="Password"
             required
+            autocomplete="off"
           />
-          <input type="email" name="email" placeholder="email" required />
-          <input type="password" name="password" placeholder="Pass" required />
           <input
             type="password"
             name="confirm_password"
-            placeholder="Again"
+            placeholder="Confirm Password"
             required
           />
         </div>
@@ -28,20 +29,26 @@
         <hr class="divider" />
 
         <div class="form-section">
-          <input type="text" name="username" placeholder="User" required />
+          <input type="text" name="username" placeholder="Username" required />
           <input
             type="text"
             name="display_name"
-            placeholder="display"
+            placeholder="Display Name"
             required
           />
 
           <div class="pfp-group">
-            <label for="pfp">PICTURE</label>
+            <label>PICTURE (Max 512KB)</label>
+            <div class="image-frame">
+              <img id="preview" src="#" alt="Preview" />
+              <span id="placeholder">No Image</span>
+            </div>
             <input
-              type="text"
-              name="pfp_url"
-              placeholder="Paste image URL here"
+              type="file"
+              id="pfp_input"
+              name="pfp"
+              accept="image/*"
+              required
             />
           </div>
 
@@ -51,5 +58,36 @@
         <button type="submit">REGISTER</button>
       </form>
     </div>
+
+    <script>
+      // Erillinen skripti on varmempi kuin inline-koodi
+      const pfpInput = document.getElementById("pfp_input");
+      const preview = document.getElementById("preview");
+      const placeholder = document.getElementById("placeholder");
+
+      pfpInput.addEventListener("change", function () {
+        const file = this.files[0];
+
+        if (file) {
+          // Tarkistetaan koko (512KB = 524288 tavua)
+          if (file.size > 524288) {
+            alert("File too big! Max 512KB.");
+            this.value = ""; // Nollaa valinnan
+            preview.style.display = "none";
+            placeholder.style.display = "block";
+            return;
+          }
+
+          // Näytetään kuva
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            preview.src = e.target.result;
+            preview.style.display = "block";
+            placeholder.style.display = "none";
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    </script>
   </body>
 </html>
