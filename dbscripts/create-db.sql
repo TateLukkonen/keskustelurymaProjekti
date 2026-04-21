@@ -7,8 +7,22 @@ CREATE TABLE server (
    server_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
    name VARCHAR(100) NOT NULL,
    creation_date DATETIME NOT NULL,
-   invite_link VARCHAR(100) UNIQUE NOT NULL,
-   private TINYINT NOT NULL
+   server_link VARCHAR(100) UNIQUE NOT NULL,
+   private TINYINT NOT NULL,
+   picture TEXT NULL,
+   invite_links INT NOT NULL
+) ENGINE=InnoDB;
+
+DROP TABLE IF EXISTS invite_links;
+CREATE TABLE invite_links (
+   invite_links_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+   server_id INT NOT NULL,
+   name VARCHAR(100) NOT NULL,
+   creation_date DATETIME NOT NULL,
+   server_link VARCHAR(100) UNIQUE NOT NULL,
+   private TINYINT NOT NULL,
+   picture TEXT NULL,
+   invite_links INT NOT NULL
 ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS users;
@@ -133,7 +147,7 @@ CREATE TABLE channel (
 	channel_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	server_id INT NOT NULL,
 	name VARCHAR(50) NOT NULL,
-	private TINYINT NOT NULL,
+	availability TINYINT NOT NULL,
 	creation_date DATETIME NOT NULL,
 	
 	FOREIGN KEY (server_id)
