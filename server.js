@@ -123,10 +123,8 @@ io.on("connection", (socket) => {
   });
 
   socket.on("create-server", async (data) => {
-    console.log("New server:", data);
-
+    console.log("new server created:", data);
     await db.createServer(data);
-
     io.emit("server-created", data);
   });
 });
