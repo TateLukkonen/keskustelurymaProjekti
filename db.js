@@ -74,15 +74,15 @@ const getChannelMessage = async (message_id) => {
                     ON users.user_id = channel_messages.user_id
                     WHERE channel_messages.channel_id = 1 
                     AND channel_messages.message_id = ?                   
-                    `;
-    const [users] = await connection.execute(sql, [message_id]);
-    connection.release();
-    return users;
-  } catch (error) {
-    console.error("Error getting channel messages:", error);
-    throw error;
-  }
-};
+                    `
+        const [users] = await connection.execute(sql, [message_id])
+        connection.release()
+        return users
+    } catch (error) {
+        console.error('Error getting channel messages:', error)
+        throw error
+    }
+}
 
 const setChannelMessages = async (message) => {
   try {
@@ -96,13 +96,13 @@ const setChannelMessages = async (message) => {
       message_id: result.insertId,
     };
 
-    connection.release();
-    return newMessage;
-  } catch (error) {
-    console.error("Error getting channel messages:", error);
-    throw error;
-  }
-};
+        connection.release()
+        return newMessage
+    } catch (error) {
+        console.error('Error getting channel messages:', error)
+        throw error
+    }
+}
 
 const deleteMessage = async (message_id) => {
   try {
@@ -110,42 +110,19 @@ const deleteMessage = async (message_id) => {
     const sql = `
                     DELETE FROM channel_messages
                     WHERE message_id = ?                   
-                    `;
-    await connection.execute(sql, [message_id]);
-    connection.release();
-  } catch (error) {
-    console.error("Error getting channel messages:", error);
-    throw error;
-  }
-};
-
-export async function createServer(data) {
-  const connection = await mysql.createConnection(dbconfig);
-
-  const [result] = await connection.execute(
-    "INSERT INTO server (name, private, creation_date) VALUES (?, ?, NOW())",
-    [data.name, data.private],
-  );
-
-  await connection.end();
-  return result;
-}
-
-export async function getServers() {
-  const connection = await mysql.createConnection(dbconfig);
-
-  const [rows] = await connection.execute("SELECT * FROM server");
-
-  await connection.end();
-  return rows;
+                    `
+        await connection.execute(sql, [message_id])
+        connection.release()
+    } catch (error) {
+        console.error('Error getting channel messages:', error)
+        throw error
+    }
 }
 
 export default {
-  getUsers,
-  getChannelMessages,
-  getChannelMessage,
-  setChannelMessages,
-  deleteMessage,
-  createServer,
-  getServers,
-};
+    getUsers,
+    getChannelMessages,
+    getChannelMessage,
+    setChannelMessages,
+    deleteMessage
+}
