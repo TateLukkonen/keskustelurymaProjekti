@@ -176,7 +176,20 @@ app.post('/delete_message', async (req, res) => {
     await db.deleteMessage(message_id)
 
     res.redirect('/main_page')
-})*/
+})
+*/
+
+// ✅ ADD THIS BLOCK (this was missing after merge)
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+const upload = multer({ storage });
 
 
 /*app.post("/register", upload.single("pfp"), async (req, res) => {
