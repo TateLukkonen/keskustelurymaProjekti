@@ -85,7 +85,9 @@ app.get("/servers", async (req, res) => {
     res.status(500).send("Error loading servers");
   }
 });
-
+app.get("/chat", isLoggedIn, (req, res) => {
+  res.render("chat", { path: req.path });
+});
 app.get("/register", (req, res) => {
   res.render("register");
 });
@@ -99,6 +101,11 @@ app.get("/main_page", isLoggedIn, async (req, res) => {
       user: dbUser,
       password: dbPwd,
       database: dbName,
+    });
+
+    // ... muiden app.get-reittien jatkoksi
+    app.get("/chat", isLoggedIn, (req, res) => {
+      res.render("chat", { path: req.path });
     });
 
     const channelMsg = await db.getChannelMessages();
@@ -199,10 +206,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-app.post("/register", upload.single("pfp"), async (req, res) => {
-  const { full_name, email, password, username, display_name, bio } = req.body;
-  const pfp_path = req.file ? `/uploads/${req.file.filename}` : null;
-});
 app.post("/register", upload.single("pfp"), async (req, res) => {
   try {
     const { full_name, email, password, username, display_name, bio } =
