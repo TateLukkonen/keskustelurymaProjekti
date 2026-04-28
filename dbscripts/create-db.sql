@@ -16,7 +16,7 @@ DROP TABLE IF EXISTS invite_links;
 CREATE TABLE invite_links (
    invite_links_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
    server_id INT NOT NULL,
-   invite_link VARCHAR(255) NOT NULL,
+   invite_link VARCHAR(255) NULL,
 
    UNIQUE (invite_link),
 

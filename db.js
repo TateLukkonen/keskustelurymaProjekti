@@ -120,29 +120,22 @@ const deleteMessage = async (message_id) => {
 }
 
 export async function createServer(data) {
-
   const connection = await getConnection();
 
   const sql = `
-    INSERT INTO server (name, private, server_link, creation_date)
-    VALUES (?, ?, ?, NOW())
+    INSERT INTO server (name, private, server_link, invite_link, creation_date)
+    VALUES (?, ?, ?, ?, NOW())
   `;
 
   const [result] = await connection.execute(sql, [
     data.name,
     data.private,
+    data.server_link,
     data.invite_link,
   ]);
 
   connection.release();
   return result;
-  const connection = await mysql.createConnection(dbconfig)
-  const [result] = await connection.execute(
-    "INSERT INTO server (name, private, creation_date) VALUES (?, ?, NOW())",
-    [data.name, data.private],
-  )
-  await connection.end()
-  return result
 }
 
 

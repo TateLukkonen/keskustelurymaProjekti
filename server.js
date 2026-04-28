@@ -141,6 +141,7 @@ import crypto from "node:crypto";
 
 app.post("/create_server", async (req, res) => {
   try {
+    const serverLink = crypto.randomBytes(8).toString("hex");
     const inviteLink = crypto.randomBytes(8).toString("hex");
 
     const isPrivate = req.body.pub_priv === "private_choice" ? 1 : 0;
@@ -150,6 +151,7 @@ app.post("/create_server", async (req, res) => {
       server_pfp: req.body.server_pfp,
       private: isPrivate,
       server_link: serverLink,
+      invite_link: serverLink,
     };
 
     await db.createServer(data);
@@ -160,7 +162,7 @@ app.post("/create_server", async (req, res) => {
     res.status(500).send("Error creating server");
   }
 });
-  
+
 /*
 app.post('/main_page_send_message', async (req, res) => {
     const message = req.body.message
@@ -191,11 +193,10 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-
-/*app.post("/register", upload.single("pfp"), async (req, res) => {
+app.post("/register", upload.single("pfp"), async (req, res) => {
   const { full_name, email, password, username, display_name, bio } = req.body;
   const pfp_path = req.file ? `/uploads/${req.file.filename}` : null;
-});*/
+});
 app.post("/register", upload.single("pfp"), async (req, res) => {
   try {
     const { full_name, email, password, username, display_name, bio } =
