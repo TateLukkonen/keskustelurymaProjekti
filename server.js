@@ -158,8 +158,29 @@ app.post('/delete_message', async (req, res) => {
 })*/
 
 app.post("/register", upload.single("pfp"), async (req, res) => {
-  const { full_name, email, password, username, display_name, bio } = req.body;
-  const pfp_path = req.file ? `/uploads/${req.file.filename}` : null;
+  try {
+    const { full_name, email, password, username, display_name, bio } =
+      req.body;
+
+    const pfp_path = req.file ? `/uploads/${req.file.filename}` : null;
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await db.createUser({
+      full_name,
+      email,
+      password: hashedPassword,
+      username,
+      display_name,
+      bio,
+      pfp_path,
+    });
+
+    res.redirect("/login");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Registration failed");
+  }
 });
 
 app.post("/login", async (req, res) => {
