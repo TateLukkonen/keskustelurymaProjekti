@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Server List</title>
+    <link rel="stylesheet" href="/styles/styles.css" />
+  </head>
+  <body>
+    <ul>
+      <% servers.forEach(server => { %>
+        <li>
+          <h3><%= server.name %></h3>
+          <p>Private: <%= server.private ? "Yes" : "No" %></p>
+          <p>Invite: <%= server.invite_link %></p>
+        </li>
+      <% }) %>
+    </ul>
+  </body>
+</html>
