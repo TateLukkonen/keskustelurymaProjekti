@@ -76,6 +76,10 @@ app.get("/create_server_settings", (req, res) => {
   res.render("create_server_settings", { path: req.path });
 });
 
+app.get("/allServers", (req, res) => {
+  res.render("allServers", { path: req.path });
+});
+
 app.get("/register", (req, res) => {
   res.render("register");
 });
@@ -130,15 +134,34 @@ io.on("connection", (socket) => {
     await db.deleteMessage(message_id);
     io.emit("delete message", message_id);
   });
-
-  socket.on("create-server", async (data) => {
-    console.log("new server created:", data);
-    await db.createServer(data);
-    io.emit("server-created", data);
-  });
-});
-
+})
 // OLD POST METHODS
+
+import crypto from "node:crypto";
+
+app.post("/create_server", async (req, res) => {
+  try {
+    const serverLink = crypto.randomBytes(8).toString("hex");
+    const inviteLink = crypto.randomBytes(8).toString("hex");
+
+    const isPrivate = req.body.pub_priv === "private_choice" ? 1 : 0;
+
+    const data = {
+      name: req.body.server_name,
+      server_pfp: req.body.server_pfp,
+      private: isPrivate,
+      server_link: serverLink,
+      invite_link: serverLink,
+    };
+
+    await db.createServer(data);
+
+    res.redirect("/main_page");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error creating server");
+  }
+});
 
 /*
 app.post('/main_page_send_message', async (req, res) => {
@@ -170,6 +193,10 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+app.post("/register", upload.single("pfp"), async (req, res) => {
+  const { full_name, email, password, username, display_name, bio } = req.body;
+  const pfp_path = req.file ? `/uploads/${req.file.filename}` : null;
+});
 app.post("/register", upload.single("pfp"), async (req, res) => {
   try {
     const { full_name, email, password, username, display_name, bio } =
