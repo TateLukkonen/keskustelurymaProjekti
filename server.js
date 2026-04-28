@@ -153,10 +153,12 @@ app.post('/delete_message', async (req, res) => {
     res.redirect('/main_page')
 })*/
 
+/*  this doesnt work
+
 app.post("/register", upload.single("pfp"), async (req, res) => {
   const { full_name, email, password, username, display_name, bio } = req.body;
   const pfp_path = req.file ? `/uploads/${req.file.filename}` : null;
-});
+}); */
 
 app.post("/login", async (req, res) => {
   req.session.user = { user: "user" };
