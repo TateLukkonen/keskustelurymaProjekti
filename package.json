@@ -4,14 +4,9 @@
     "ejs": "^5.0.2",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
-<<<<<<< HEAD
-    "mysql": "^2.18.1",
-    "mysql2": "^3.22.1",
-=======
     "multer": "^2.1.1",
     "mysql2": "^3.22.2",
     "nodemon": "^3.1.14",
->>>>>>> de95b83b62b1706a090b2428bcec5c0c09368a0d
     "socket.io": "^4.8.3"
   },
   "type": "module"
