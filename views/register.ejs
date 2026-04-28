@@ -60,31 +60,31 @@
     </div>
 
     <script>
-      const pfpInput = document.getElementById("pfp_input");
-      const preview = document.getElementById("preview");
-      const placeholder = document.getElementById("placeholder");
+      const pfpInput = document.getElementById("pfp_input")
+      const preview = document.getElementById("preview")
+      const placeholder = document.getElementById("placeholder")
 
       pfpInput.addEventListener("change", function () {
-        const file = this.files[0];
+        const file = this.files[0]
 
         if (file) {
-          if (file.size > 524288) {
-            alert("File too big! Max 512KB.");
-            this.value = "";
-            preview.style.display = "none";
-            placeholder.style.display = "block";
-            return;
+          if (file.size > 524288) /* 512KB */ {
+            alert("File too big! Max 512KB.")
+            this.value = ""
+            preview.style.display = "none"
+            placeholder.style.display = "block"
+            return
           }
 
-          const reader = new FileReader();
+          const reader = new FileReader()
           reader.onload = function (e) {
-            preview.src = e.target.result;
-            preview.style.display = "block";
-            placeholder.style.display = "none";
-          };
-          reader.readAsDataURL(file);
+            preview.src = e.target.result
+            preview.style.display = "block"
+            placeholder.style.display = "none"
+          }
+          reader.readAsDataURL(file)
         }
-      });
+      })
     </script>
   </body>
 </html>

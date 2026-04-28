@@ -6,6 +6,25 @@
     <title>VΣlchat</title>
   </head>
   <body>
-    <h1></h1>
+    <div class="container">
+
+    <!-- Top Section -->
+    <div class="top-section">
+
+        <div class="left-info">
+            <h2><%= user.username %></h2>
+            <p>Display name: <%= user.displayName %></p>
+
+            <form action="/update-profile" method="POST">
+                <input type="text" name="displayName" placeholder="Edit display name">
+                <button type="submit">Save changes</button>
+            </form>
+
+            <div class="status">
+                <span>Status:</span>
+                <span class="<%= user.online ? 'online' : 'offline' %>"></span>
+            </div>
+        </div>
+
   </body>
 </html>
