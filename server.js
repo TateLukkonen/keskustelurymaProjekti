@@ -140,7 +140,7 @@ io.on("connection", (socket) => {
     await db.deleteMessage(message_id);
     io.emit("delete message", message_id);
   });
-})
+});
 // OLD POST METHODS
 
 import crypto from "node:crypto";

@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VΣlchat</title>
-  </head>
-  <body>
-    <div class="container">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
 
-    <!-- Top Section -->
+<div class="container">
+
+   
     <div class="top-section">
 
         <div class="left-info">
@@ -26,5 +27,55 @@
             </div>
         </div>
 
-  </body>
+        
+        <div class="profile-pic">
+            <img src="<%= user.pfp || '/default.png' %>" alt="PFP">
+        </div>
+
+        
+        <div class="bio">
+            <h3>Bio</h3>
+            <p><%= user.bio || "No bio yet..." %></p>
+        </div>
+
+    </div>
+
+    
+    <div class="server-toggle">
+        <button onclick="showPublic()">Public server</button>
+        <button onclick="showPrivate()">Private server</button>
+    </div>
+
+    
+    <div class="servers">
+
+        <% servers.forEach(server => { %>
+            <div class="server-card">
+                <div class="icon"></div>
+                <div class="info">
+                    <p><%= server.name %></p>
+                    <small>
+                        Members: <%= server.members %><br>
+                        Created: <%= server.createdAt.toDateString() %>
+                    </small>
+                </div>
+            </div>
+        <% }) %>
+
+    </div>
+
+</div>
+
+<script>
+function showPublic() {
+    
+    console.log("Public servers");
+}
+
+function showPrivate() {
+    console.log("Private servers");
+}
+</script>
+
+</body>
 </html>

@@ -1,21 +1,21 @@
-import mysql from "mysql2/promise"
-import dbconfig from "./dbconfig.json" with { type: "json" }
-const pool = mysql.createPool(dbconfig)
+import mysql from "mysql2/promise";
+import dbconfig from "./dbconfig.json" with { type: "json" };
+const pool = mysql.createPool(dbconfig);
 
 const getConnection = async () => {
   try {
-    const connection = await pool.getConnection()
-    return connection
+    const connection = await pool.getConnection();
+    return connection;
   } catch (error) {
-    console.error("Error getting MySQL connection:", error)
-    throw error
+    console.error("Error getting MySQL connection:", error);
+    throw error;
   }
-}
+};
 
 //  EXAMPLE FUNCTION BELOW
 const getUsers = async () => {
   try {
-    const connection = await getConnection()
+    const connection = await getConnection();
     const sql = `
                     SELECT customer.name AS 'customer',
                     system_user.id AS 'id',
@@ -28,19 +28,19 @@ const getUsers = async () => {
                     FROM customer
                     RIGHT JOIN system_user
                     ON customer.id = system_user.customer_id
-                    `
-    const [users] = await connection.execute(sql)
-    connection.release()
-    return users
+                    `;
+    const [users] = await connection.execute(sql);
+    connection.release();
+    return users;
   } catch (error) {
-    console.error("Error getting users:", error)
-    throw error
+    console.error("Error getting users:", error);
+    throw error;
   }
-}
+};
 
 const getChannelMessages = async () => {
   try {
-    const connection = await getConnection()
+    const connection = await getConnection();
     const sql = `
                     SELECT channel_messages.message_id,
                     users.display_name,
@@ -50,19 +50,19 @@ const getChannelMessages = async () => {
                     FROM channel_messages
                     JOIN users
                     WHERE channel_messages.channel_id = 1                    
-                    `
-    const [users] = await connection.execute(sql)
-    connection.release()
-    return users
+                    `;
+    const [users] = await connection.execute(sql);
+    connection.release();
+    return users;
   } catch (error) {
-    console.error("Error getting channel messages:", error)
-    throw error
+    console.error("Error getting channel messages:", error);
+    throw error;
   }
-}
+};
 
 const getChannelMessage = async (message_id) => {
   try {
-    const connection = await getConnection()
+    const connection = await getConnection();
     const sql = `
                     SELECT channel_messages.message_id,
                     users.display_name,
@@ -74,50 +74,50 @@ const getChannelMessage = async (message_id) => {
                     ON users.user_id = channel_messages.user_id
                     WHERE channel_messages.channel_id = 1 
                     AND channel_messages.message_id = ?                   
-                    `
-    const [users] = await connection.execute(sql, [message_id])
-    connection.release()
-    return users
+                    `;
+    const [users] = await connection.execute(sql, [message_id]);
+    connection.release();
+    return users;
   } catch (error) {
-    console.error("Error getting channel messages:", error)
-    throw error
+    console.error("Error getting channel messages:", error);
+    throw error;
   }
-}
+};
 
 const setChannelMessages = async (message) => {
   try {
-    const connection = await getConnection()
+    const connection = await getConnection();
     const sql = `
                     INSERT INTO channel_messages (channel_id, user_id, message, creation_date) VALUES
                     (1, 1, ?, NOW())                    
-                    `
-    const [result] = await connection.execute(sql, [message])
+                    `;
+    const [result] = await connection.execute(sql, [message]);
     const newMessage = {
       message_id: result.insertId,
-    }
+    };
 
-    connection.release()
-    return newMessage
+    connection.release();
+    return newMessage;
   } catch (error) {
-    console.error("Error getting channel messages:", error)
-    throw error
+    console.error("Error getting channel messages:", error);
+    throw error;
   }
-}
+};
 
 const deleteMessage = async (message_id) => {
   try {
-    const connection = await getConnection()
+    const connection = await getConnection();
     const sql = `
                 DELETE FROM channel_messages
                 WHERE message_id = ?                   
-                `
-    await connection.execute(sql, [message_id])
-    connection.release()
+                `;
+    await connection.execute(sql, [message_id]);
+    connection.release();
   } catch (error) {
-    console.error("Error getting channel messages:", error)
-    throw error
+    console.error("Error getting channel messages:", error);
+    throw error;
   }
-}
+};
 
 export async function createServer(data) {
   const connection = await getConnection();
@@ -138,28 +138,63 @@ export async function createServer(data) {
   return result;
 }
 
-
 export async function getServers() {
-  const connection = await mysql.createConnection(dbconfig)
-  const [rows] = await connection.execute("SELECT * FROM server")
-  await connection.end()
-  return rows
+  const connection = await mysql.createConnection(dbconfig);
+  const [rows] = await connection.execute("SELECT * FROM server");
+  await connection.end();
+  return rows;
 }
 
-const registerAccount = async (full_name, username, display_name, email, password, admin, creation_date, blacklist, servers_created, servers_joined, status, avatar_url, bio) => {
-    try {
-        const connection = await getConnection()
-        const sql = `
+const registerAccount = async (
+  full_name,
+  username,
+  display_name,
+  email,
+  password,
+  admin,
+  creation_date,
+  blacklist,
+  servers_created,
+  servers_joined,
+  status,
+  avatar_url,
+  bio,
+) => {
+  try {
+    const connection = await getConnection();
+    const sql = `
                     INSERT INTO users (full_name, username, display_name, email, password, admin, creation_date, blacklist, servers_created, servers_joined, status, avatar_url, bio)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    `
-        await connection.execute(sql, [full_name, username, display_name, email, password, admin, creation_date, blacklist, servers_created, servers_joined, status, avatar_url, bio])
-        connection.release()
-    } catch (error) {
-        console.error('Error registering account:', error)
-        throw error
-    }
-}
+                    `;
+    await connection.execute(sql, [
+      full_name,
+      username,
+      display_name,
+      email,
+      password,
+      admin,
+      creation_date,
+      blacklist,
+      servers_created,
+      servers_joined,
+      status,
+      avatar_url,
+      bio,
+    ]);
+    connection.release();
+  } catch (error) {
+    console.error("Error registering account:", error);
+    throw error;
+  }
+
+  async function getUserById(id) {
+    const [rows] = await connection.execute(
+      "SELECT * FROM users WHERE id = ?",
+      [id],
+    );
+    return rows[0];
+  }
+};
 
 export default {
   getUsers,
@@ -169,5 +204,5 @@ export default {
   deleteMessage,
   createServer,
   getServers,
-  registerAccount
-}
+  registerAccount,
+};
