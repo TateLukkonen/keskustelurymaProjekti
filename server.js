@@ -148,16 +148,23 @@ import crypto from "node:crypto";
 app.post("/create_server", async (req, res) => {
   try {
     const serverLink = crypto.randomBytes(8).toString("hex");
-    const inviteLink = crypto.randomBytes(8).toString("hex");
 
     const isPrivate = req.body.pub_priv === "private_choice" ? 1 : 0;
+
+    let inviteLink;
+
+    if (isPrivate == 1) {
+      inviteLink = crypto.randomBytes(8).toString("hex");
+    } else {
+      inviteLink = null;
+    }
 
     const data = {
       name: req.body.server_name,
       server_pfp: req.body.server_pfp,
       private: isPrivate,
       server_link: serverLink,
-      invite_link: serverLink,
+      invite_link: inviteLink,
     };
 
     await db.createServer(data);
