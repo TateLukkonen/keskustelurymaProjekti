@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="/styles/styles.css" />
+  </head>
+  <body>
+    <div class="register-container">
+      <form action="/register" method="POST" enctype="multipart/form-data">
+        <div class="form-section">
+          <input type="text" name="full_name" placeholder="Name" required />
+          <input type="email" name="email" placeholder="Email" required />
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            required
+            autocomplete="off"
+          />
+          <input
+            type="password"
+            name="confirm_password"
+            placeholder="Confirm Password"
+            required
+          />
+        </div>
+
+        <hr class="divider" />
+
+        <div class="form-section">
+          <input type="text" name="username" placeholder="Username" required />
+          <input
+            type="text"
+            name="display_name"
+            placeholder="Display Name"
+            required
+          />
+
+          <div class="pfp-group">
+            <label>PICTURE (Max 512KB)</label>
+            <div class="image-frame">
+              <img id="preview" src="#" alt="Preview" />
+              <span id="placeholder">No Image</span>
+            </div>
+            <input
+              type="file"
+              id="pfp_input"
+              name="pfp"
+              accept="image/*"
+              required
+            />
+          </div>
+
+          <textarea name="bio" placeholder="BIO" rows="4"></textarea>
+        </div>
+
+        <button type="submit">REGISTER</button>
+      </form>
+    </div>
+
+    <script>
+      const pfpInput = document.getElementById("pfp_input");
+      const preview = document.getElementById("preview");
+      const placeholder = document.getElementById("placeholder");
+
+      pfpInput.addEventListener("change", function () {
+        const file = this.files[0];
+
+        if (file) {
+          if (file.size > 524288) {
+            alert("File too big! Max 512KB.");
+            this.value = "";
+            preview.style.display = "none";
+            placeholder.style.display = "block";
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            preview.src = e.target.result;
+            preview.style.display = "block";
+            placeholder.style.display = "none";
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    </script>
+  </body>
+</html>

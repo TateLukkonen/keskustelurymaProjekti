@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form action="/main_page" id="serverForm">
+        <input type="text" name="server_name" placeholder="Server name" required>
+        <input type="radio" name="server_pfp" value="pfp1">
+        <input type="radio" name="server_pfp" value="pfp2">
+        <input type="radio" name="server_pfp" value="pfp3">
+        <input type="radio" name="server_pfp" value="pfp4">
+        <input type="radio" name="server_pfp" value="pfp5">
+        <input type="radio" name="pub_priv" value="public_choice"> Public
+        <input type="radio" name="pub_priv" value="private_choice"> Private
+        <button type="submit">Create Server</button>
+    </form>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+    const socket = io();
+
+    const form = document.getElementById("serverForm");
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault(); // stop normal form submit
+
+      const formData = new FormData(form);
+
+      const data = {
+        name: formData.get("server_name"),
+        // server_pfp: formData.get("server_pfp"),
+        private: formData.get("pub_priv")
+      };
+
+      socket.emit("create-server", data);
+      window.location.href = "/main_page";
+    });
+    </script>
+</body>
+</html>
