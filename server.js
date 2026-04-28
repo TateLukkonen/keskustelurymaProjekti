@@ -76,8 +76,14 @@ app.get("/create_server_settings", (req, res) => {
   res.render("create_server_settings", { path: req.path });
 });
 
-app.get("/allServers", (req, res) => {
-  res.render("allServers", { path: req.path });
+app.get("/servers", async (req, res) => {
+  try {
+    const servers = await db.getServers();
+    res.render("servers", { servers });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error loading servers");
+  }
 });
 app.get("/chat", isLoggedIn, (req, res) => {
   res.render("chat", { path: req.path });
