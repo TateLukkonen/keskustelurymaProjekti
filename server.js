@@ -11,6 +11,7 @@ import config from "./config.json" with { type: "json" };
 import dbconfig from "./dbconfig.json" with { type: "json" };
 import db from "./db.js";
 import { fileURLToPath } from "node:url";
+import multer from "multer";
 
 // Lets
 //let loggedIn = false
@@ -49,6 +50,9 @@ app.use(
 
 app.use(express.static("public"));
 app.use("/styles", express.static("public/styles"));
+
+// uploads folder for profile pictures
+app.use("/uploads", express.static("uploads"));
 
 // Functions
 function isLoggedIn(req, res, next) {
@@ -174,10 +178,36 @@ app.post('/delete_message', async (req, res) => {
     res.redirect('/main_page')
 })*/
 
+
 /*app.post("/register", upload.single("pfp"), async (req, res) => {
   const { full_name, email, password, username, display_name, bio } = req.body;
   const pfp_path = req.file ? `/uploads/${req.file.filename}` : null;
 });*/
+app.post("/register", upload.single("pfp"), async (req, res) => {
+  try {
+    const { full_name, email, password, username, display_name, bio } =
+      req.body;
+
+    const pfp_path = req.file ? `/uploads/${req.file.filename}` : null;
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await db.createUser({
+      full_name,
+      email,
+      password: hashedPassword,
+      username,
+      display_name,
+      bio,
+      pfp_path,
+    });
+
+    res.redirect("/login");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Registration failed");
+  }
+});
 
 app.post("/login", async (req, res) => {
   req.session.user = { user: "user" };
