@@ -12,32 +12,6 @@ const getConnection = async () => {
   }
 }
 
-//  EXAMPLE FUNCTION BELOW
-const getUsers = async () => {
-  try {
-    const connection = await getConnection()
-    const sql = `
-                    SELECT customer.name AS 'customer',
-                    system_user.id AS 'id',
-                    system_user.fullname AS 'full name',
-                    system_user.email AS 'email',
-                    CASE 
-                        WHEN system_user.admin = 0 THEN 'false'
-                        ELSE 'true'
-                    END AS 'admin'
-                    FROM customer
-                    RIGHT JOIN system_user
-                    ON customer.id = system_user.customer_id
-                    `
-    const [users] = await connection.execute(sql)
-    connection.release()
-    return users
-  } catch (error) {
-    console.error("Error getting users:", error)
-    throw error
-  }
-}
-
 const getChannelMessages = async () => {
   try {
     const connection = await getConnection()
@@ -146,14 +120,14 @@ export async function getServers() {
   return rows
 }
 
-const registerAccount = async (full_name, username, display_name, email, password, admin, creation_date, blacklist, servers_created, servers_joined, status, avatar_url, bio) => {
+const registerAccount = async (full_name, username, display_name, email, password, admin, blacklist, status, avatar_url, bio) => {
     try {
         const connection = await getConnection()
         const sql = `
-                    INSERT INTO users (full_name, username, display_name, email, password, admin, creation_date, blacklist, servers_created, servers_joined, status, avatar_url, bio)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO users (full_name, username, display_name, email, password, admin, blacklist, status, avatar_url, bio)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     `
-        await connection.execute(sql, [full_name, username, display_name, email, password, admin, creation_date, blacklist, servers_created, servers_joined, status, avatar_url, bio])
+        await connection.execute(sql, [full_name, username, display_name, email, password, admin, blacklist, status, avatar_url, bio])
         connection.release()
     } catch (error) {
         console.error('Error registering account:', error)
@@ -161,13 +135,63 @@ const registerAccount = async (full_name, username, display_name, email, passwor
     }
 }
 
+const attemptLogin = async (email, password) => {
+    try {
+        const connection = await getConnection()
+        const sql = `
+                    SELECT email AS 'email',
+                    password AS 'password'
+                    FROM users
+                    WHERE email = ?                    
+                    `
+        const [bool] = await connection.execute(sql, [email])
+        connection.release()
+
+        if (bool[0] != undefined) {
+            console.log('User found');
+            return bool[0].password
+        } else {
+            console.log('No user found')
+            return false
+        }
+    } catch (error) {
+        console.log('Error attempting login:', error);
+    }
+}
+
+const getCurrentSessionUser = async (email) => {
+  try {
+    const connection = await getConnection()
+    const sql = `
+                SELECT user_id,
+                full_name,
+                username,
+                display_name,
+                email,
+                creation_date,
+                status,
+                avatar_url,
+                bio
+                FROM users
+                WHERE email = ?                 
+                `
+    const [user] = await connection.execute(sql, [email])
+    connection.release()
+    return user
+  } catch (error) {
+    console.error("Error getting current session user:", error)
+    throw error
+  }
+}
+
 export default {
-  getUsers,
   getChannelMessages,
   getChannelMessage,
   setChannelMessages,
   deleteMessage,
   createServer,
   getServers,
-  registerAccount
+  registerAccount,
+  attemptLogin,
+  getCurrentSessionUser
 }
