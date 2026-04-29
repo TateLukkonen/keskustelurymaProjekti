@@ -81,7 +81,9 @@ app.get("/create_server_settings", isLoggedIn, (req, res) => {
 app.get("/servers", isLoggedIn, (req, res) => {
   res.render("servers", { path: req.path });
 });
-
+app.get("/chat", isLoggedIn, (req, res) => {
+  res.render("chat", { path: req.path });
+});
 app.get("/register", (req, res) => {
   res.render("register");
 });
@@ -95,6 +97,11 @@ app.get("/main_page", isLoggedIn, async (req, res) => {
       user: dbUser,
       password: dbPwd,
       database: dbName,
+    });
+
+    // ... muiden app.get-reittien jatkoksi
+    app.get("/chat", isLoggedIn, (req, res) => {
+      res.render("chat", { path: req.path });
     });
 
     const channelMsg = await db.getChannelMessages();
