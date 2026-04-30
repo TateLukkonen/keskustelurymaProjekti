@@ -403,9 +403,8 @@ export default {
   deleteMessage,
   createServer,
   getServers,
-  registerAccount,
   attemptLogin,
   getCurrentSessionUser,
   getIdByEmail,
-  getIdByUsername
-}
+  getIdByUsername,
+};
