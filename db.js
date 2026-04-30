@@ -229,7 +229,6 @@ export async function createServer(data) {
 }
 
 export async function getServers() {
-<<<<<<< HEAD
   const connection = await getConnection();
 
   const sql = `
@@ -246,48 +245,70 @@ export async function getServers() {
   return rows;
 }
 
-const registerAccount = async (full_name, username, display_name, email, password, admin, blacklist, status, avatar_url, bio) => {
-    try {
-        const connection = await getConnection()
-        const sql = `
+const registerAccount = async (
+  full_name,
+  username,
+  display_name,
+  email,
+  password,
+  admin,
+  blacklist,
+  status,
+  avatar_url,
+  bio,
+) => {
+  try {
+    const connection = await getConnection();
+    const sql = `
                     INSERT INTO users (full_name, username, display_name, email, password, admin, blacklist, status, avatar_url, bio)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    `
-        await connection.execute(sql, [full_name, username, display_name, email, password, admin, blacklist, status, avatar_url, bio])
-        connection.release()
-    } catch (error) {
-        console.error('Error registering account:', error)
-        throw error
-    }
-}
+                    `;
+    await connection.execute(sql, [
+      full_name,
+      username,
+      display_name,
+      email,
+      password,
+      admin,
+      blacklist,
+      status,
+      avatar_url,
+      bio,
+    ]);
+    connection.release();
+  } catch (error) {
+    console.error("Error registering account:", error);
+    throw error;
+  }
+};
 
 const attemptLogin = async (email, password) => {
-    try {
-        const connection = await getConnection()
-        const sql = `
+  try {
+    const connection = await getConnection();
+    const sql = `
                     SELECT email AS 'email',
                     password AS 'password'
                     FROM users
                     WHERE email = ?                    
-                    `
-        const [bool] = await connection.execute(sql, [email])
-        connection.release()
+                    `;
+    const [bool] = await connection.execute(sql, [email]);
+    connection.release();
 
-        if (bool[0] != undefined) {
-            console.log('User found');
-            return bool[0].password
-        } else {
-            console.log('No user found')
-            return false
-        }
-    } catch (error) {
-        console.log('Error attempting login:', error);
+    if (bool[0] != undefined) {
+      console.log("User found");
+      return bool[0].password;
+    } else {
+      console.log("No user found");
+      return false;
     }
-}
+  } catch (error) {
+    console.log("Error attempting login:", error);
+  }
+};
 
 const getCurrentSessionUser = async (email) => {
   try {
-    const connection = await getConnection()
+    const connection = await getConnection();
     const sql = `
                 SELECT user_id,
                 full_name,
@@ -302,21 +323,19 @@ const getCurrentSessionUser = async (email) => {
                 bio
                 FROM users
                 WHERE email = ?                 
-                `
-    const [user] = await connection.execute(sql, [email])
-    connection.release()
-    return user
+                `;
+    const [user] = await connection.execute(sql, [email]);
+    connection.release();
+    return user;
   } catch (error) {
-    console.error("Error getting current session user:", error)
-    throw error
+    console.error("Error getting current session user:", error);
+    throw error;
   }
-=======
   const connection = await mysql.createConnection(dbconfig);
   const [rows] = await connection.execute("SELECT * FROM server");
   await connection.end();
   return rows;
->>>>>>> c02d4e20d4bc225f7c9fc7f62cbcaddb7b2674a5
-}
+};
 
 export default {
   getUsers,
