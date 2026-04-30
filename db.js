@@ -168,7 +168,9 @@ const getCurrentSessionUser = async (email) => {
                 username,
                 display_name,
                 email,
+                admin,
                 creation_date,
+                blacklist,
                 status,
                 avatar_url,
                 bio
