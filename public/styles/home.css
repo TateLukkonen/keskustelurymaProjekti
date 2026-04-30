@@ -1,0 +1,81 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #2f4154;
+  color: white;
+}
+
+header {
+  background: #8e44ad;
+  height: 20px;
+}
+
+.server-toggle {
+  text-align: center;
+}
+
+.container {
+  padding: 20px;
+}
+
+.top-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.profile-pic img {
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: #ccc;
+}
+
+.bio {
+  width: 250px;
+  height: 200px;
+  background: #ddd;
+  color: black;
+  padding: 10px;
+}
+
+.status .online {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background: green;
+  border-radius: 50%;
+}
+
+.status .offline {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background: red;
+  border-radius: 50%;
+}
+
+.server-toggle {
+  margin: 20px 0;
+}
+
+.servers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.server-card {
+  background: #ddd;
+  color: black;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.server-card .icon {
+  width: 40px;
+  height: 40px;
+  background: #666;
+  margin-right: 10px;
+}
