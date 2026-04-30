@@ -103,6 +103,18 @@ app.get("/main_page", isLoggedIn, async (req, res) => {
       database: dbName,
     });
 
+    app.get("/home", (req, res) => {
+      res.render("home", {
+        user: {
+          username: "DemoUser",
+          displayName: "Demo Name",
+          online: true,
+          bio: "This is a test user",
+        },
+        servers: [{ name: "Test Server", members: 10, createdAt: new Date() }],
+      });
+    });
+
     // ... muiden app.get-reittien jatkoksi
     app.get("/chat", isLoggedIn, (req, res) => {
       res.render("chat", { path: req.path });
