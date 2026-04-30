@@ -12,118 +12,6 @@ const getConnection = async () => {
   }
 };
 
-const getUsers = async () => {
-  try {
-    const connection = await getConnection();
-    const sql = `
-      SELECT customer.name AS 'customer',
-      system_user.id AS 'id',
-      system_user.fullname AS 'full name',
-      system_user.email AS 'email',
-      CASE 
-          WHEN system_user.admin = 0 THEN 'false'
-          ELSE 'true'
-      END AS 'admin'
-      FROM customer
-      RIGHT JOIN system_user
-      ON customer.id = system_user.customer_id
-    `;
-    const [users] = await connection.execute(sql);
-    connection.release();
-    return users;
-  } catch (error) {
-    console.error("Error getting users:", error);
-    throw error;
-  }
-};
-
-const registerAccount = async (
-  full_name,
-  username,
-  display_name,
-  email,
-  password,
-  admin,
-  blacklist,
-  status,
-  avatar_url,
-  bio,
-) => {
-  try {
-    const connection = await getConnection();
-    const sql = `
-      INSERT INTO users 
-      (full_name, username, display_name, email, password, admin, blacklist, status, avatar_url, bio)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-    await connection.execute(sql, [
-      full_name,
-      username,
-      display_name,
-      email,
-      password,
-      admin,
-      blacklist,
-      status,
-      avatar_url,
-      bio,
-    ]);
-    connection.release();
-  } catch (error) {
-    console.error("Error registering account:", error);
-    throw error;
-  }
-};
-
-const attemptLogin = async (email) => {
-  try {
-    const connection = await getConnection();
-    const sql = `
-      SELECT email, password
-      FROM users
-      WHERE email = ?
-    `;
-    const [rows] = await connection.execute(sql, [email]);
-    connection.release();
-
-    if (rows[0]) {
-      return rows[0].password;
-    } else {
-      return false;
-    }
-  } catch (error) {
-    console.error("Error attempting login:", error);
-    throw error;
-  }
-};
-
-const getCurrentSessionUser = async (email) => {
-  try {
-    const connection = await getConnection();
-    const sql = `
-      SELECT user_id,
-      full_name,
-      username,
-      display_name,
-      email,
-      admin,
-      creation_date,
-      blacklist,
-      status,
-      avatar_url,
-      bio
-      FROM users
-      WHERE email = ?
-    `;
-    const [user] = await connection.execute(sql, [email]);
-    connection.release();
-    return user;
-  } catch (error) {
-    console.error("Error getting current session user:", error);
-    throw error;
-  }
-};
-
 const getChannelMessages = async () => {
   try {
     const connection = await getConnection();
@@ -245,18 +133,7 @@ export async function getServers() {
   return rows;
 }
 
-const registerAccount = async (
-  full_name,
-  username,
-  display_name,
-  email,
-  password,
-  admin,
-  blacklist,
-  status,
-  avatar_url,
-  bio,
-) => {
+const registerAccount = async (full_name, username, display_name, email, password, admin, blacklist, status, avatar_url, bio,) => {
   try {
     const connection = await getConnection();
     const sql = `
@@ -393,10 +270,6 @@ const getIdByUsername = async (username) => {
 }
 
 export default {
-  getUsers,
-  registerAccount,
-  attemptLogin,
-  getCurrentSessionUser,
   getChannelMessages,
   getChannelMessage,
   setChannelMessages,
