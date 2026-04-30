@@ -18,6 +18,18 @@
             <%- include('message', {info: msg}) %>
         <% } %>
     </div>
+    
+    <div class="userInfo">
+        <p>User ID: <%= sessionUser.user_id %></p>
+        <p>Full name: <%= sessionUser.full_name %></p>
+        <p>Username: <%= sessionUser.username %></p>
+        <p>Display name: <%= sessionUser.display_name %></p>
+        <p>Email: <%= sessionUser.email %></p>
+        <p>Date of account creation: <%= sessionUser.creation_date %></p>
+        <p>Status: <%= sessionUser.status %></p>
+        <p>Avatar URL: <%= sessionUser.avatar_url %></p>
+        <p>Bio: <%= sessionUser.bio %></p>
+    </div>
 
     <ul id="servers"></ul>
     
