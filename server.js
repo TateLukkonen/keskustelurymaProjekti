@@ -214,7 +214,7 @@ app.post("/register", upload.single("pfp"), async (req, res) => {
     const { full_name, username, password, display_name, email, bio } =
       req.body;
 
-    const pfp_path = req.file ? `/uploads/${req.file.filename}` : null;
+    const pfp_path = req.file ? `/uploads/${req.file.filename}` : '/uploads/default_icon.png';
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
