@@ -8,6 +8,7 @@ CREATE TABLE server (
    name VARCHAR(100) NOT NULL,
    creation_date DATETIME NOT NULL,
    server_link VARCHAR(100) UNIQUE NOT NULL,
+   invite_link VARCHAR(100) UNIQUE NULL,
    private BOOLEAN NOT NULL,
    server_picture_url VARCHAR(255) NULL
 ) ENGINE=InnoDB;

@@ -8,7 +8,6 @@ import http from "node:http";
 import { Server } from "socket.io";
 import crypto from "node:crypto";
 
-
 import config from "./config.json" with { type: "json" };
 import dbconfig from "./dbconfig.json" with { type: "json" };
 import db from "./db.js";
@@ -78,9 +77,20 @@ app.get("/create_server_settings", isLoggedIn, (req, res) => {
   res.render("create_server_settings", { path: req.path });
 });
 
-app.get("/servers", isLoggedIn, (req, res) => {
-  res.render("servers", { path: req.path });
+app.get("/servers", isLoggedIn, async (req, res) => {
+  try {
+    const servers = await db.getServers();
+
+    res.render("servers", {
+      servers,
+      path: req.path,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error loading servers");
+  }
 });
+
 app.get("/chat", isLoggedIn, (req, res) => {
   res.render("chat", { path: req.path });
 });
@@ -107,7 +117,7 @@ app.get("/main_page", isLoggedIn, async (req, res) => {
       channelMessages: channelMsg,
       servers: servers,
       sessionUser: sessionUser[0],
-      path: req.path
+      path: req.path,
     });
   } catch (err) {
     console.error("Database error: " + err);
@@ -120,6 +130,23 @@ app.get("/main_page", isLoggedIn, async (req, res) => {
       console.error("Error closing connection:", closeError);
     }
   }
+});
+
+app.get("/home", (req, res) => {
+  res.render("home", {
+    user: {
+      username: "DemoUser",
+      displayName: "Demo Name",
+      online: true,
+      bio: "This is a test user",
+    },
+    servers: [{ name: "Test Server", members: 10, createdAt: new Date() }],
+  });
+});
+
+// ... muiden app.get-reittien jatkoksi
+app.get("/chat", isLoggedIn, (req, res) => {
+  res.render("chat", { path: req.path });
 });
 
 // Socket.IO events
@@ -140,23 +167,33 @@ io.on("connection", (socket) => {
     await db.deleteMessage(message_id);
     io.emit("delete message", message_id);
   });
-})
+});
 
 // POST METHODS
 
 app.post("/create_server", async (req, res) => {
   try {
     const serverLink = crypto.randomBytes(8).toString("hex");
-    const inviteLink = crypto.randomBytes(8).toString("hex");
 
     const isPrivate = req.body.pub_priv === "private_choice" ? 1 : 0;
 
+    let inviteLink;
+
+    if (isPrivate == 1) {
+      inviteLink = crypto.randomBytes(8).toString("hex");
+    } else {
+      inviteLink = null;
+    }
+
+    
+    
     const data = {
       name: req.body.server_name,
       server_pfp: req.body.server_pfp,
       private: isPrivate,
       server_link: serverLink,
-      invite_link: serverLink,
+      invite_link: inviteLink,
+      owner: 1,
     };
 
     await db.createServer(data);
@@ -202,7 +239,9 @@ app.post("/register", upload.single("pfp"), async (req, res) => {
     const { full_name, username, password, display_name, email, bio } =
       req.body;
 
-    const pfp_path = req.file ? `/uploads/${req.file.filename}` : '/uploads/default_icon.png';
+    const pfp_path = req.file
+      ? `/uploads/${req.file.filename}`
+      : "/uploads/default_icon.png";
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -214,9 +253,9 @@ app.post("/register", upload.single("pfp"), async (req, res) => {
       hashedPassword,
       false,
       false,
-      'offline',
+      "offline",
       pfp_path,
-      bio
+      bio,
     );
 
     res.redirect("/login");
