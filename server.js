@@ -15,8 +15,8 @@ import db from "./db.js";
 import { fileURLToPath } from "node:url";
 import multer from "multer";
 
-// Lets
-//let loggedIn = false
+// RegEx
+const regEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 // Constants
 const { host, port } = config;
@@ -99,14 +99,9 @@ app.get("/main_page", isLoggedIn, async (req, res) => {
       database: dbName,
     });
 
-    // ... muiden app.get-reittien jatkoksi
-    app.get("/chat", isLoggedIn, (req, res) => {
-      res.render("chat", { path: req.path });
-    });
-
     const channelMsg = await db.getChannelMessages();
     const servers = await db.getServers();
-    const sessionUser = await db.getCurrentSessionUser(req.session.user.email)
+    const sessionUser = await db.getCurrentSessionUser(req.session.user.id)
 
     res.render("main_page", {
       channelMessages: channelMsg,
@@ -232,41 +227,74 @@ app.post("/register", upload.single("pfp"), async (req, res) => {
 });
 
 app.post("/login", async (req, res) => {
-    if (req.body.email.length != 0 && req.body.password.length != 0) {
-        const email = req.body.email
-        const password = req.body.password
+  const login = req.body.login
+  const password = req.body.password
 
-        async function login(email, password) {
-            const foundUserHashedPass = await db.attemptLogin(email, password)
-            return foundUserHashedPass
+  if (regEmail.test(login) === true) {
+    try {
+      async function loginFunction(login, password) {
+        const foundUserHashedPass = await db.attemptLogin(false, login, password)
+        return foundUserHashedPass
+      }
+
+      const hashedPass = await loginFunction(login, password)
+
+      bcrypt.compare(password, hashedPass, async function(err, bcryptRes) {
+        if (err) {
+          console.log('Password comparison went wrong: ', err);
+          delete req.session
+          res.redirect('/login')
         }
-
-        const hashedPass = await login(email, password)
-
-        bcrypt.compare(password, hashedPass, function(err, bcryptRes) {
-            if (err) {
-                console.log('Password comparison went wrong: ', err);
-                delete req.session
-                res.redirect('/login')
-            }
-            if (bcryptRes) {
-                console.log('Passwords match');
-                req.session.user = { email: email } 
-                res.redirect('/main_page') // main chat view
-            }
-            else {
-                console.log('Passwords do not match');
-                delete req.session
-                res.redirect('/login')
-            }
-        })
+        if (bcryptRes) {
+          console.log('Passwords match');
+          const userId = await db.getIdByEmail(login)
+          req.session.user = { id: userId } 
+          res.redirect('/main_page') // main chat view
+        }
+        else {
+          console.log('Passwords do not match');
+          delete req.session
+          res.redirect('/login')
+        }
+      })
     }
-    else {
-        console.log('email or password not filled in');
-        res.redirect('/login')
+    catch (err) {
+      console.log(err);
     }
   }
-);
+  else if (regEmail.test(login) === false) {
+    try {
+      async function loginFunction(login, password) {
+        const foundUserHashedPass = await db.attemptLogin(login, false, password)
+        return foundUserHashedPass
+      }
+
+      const hashedPass = await loginFunction(login, password)
+
+      bcrypt.compare(password, hashedPass, async function(err, bcryptRes) {
+        if (err) {
+          console.log('Password comparison went wrong: ', err);
+          delete req.session
+          res.redirect('/login')
+        }
+        if (bcryptRes) {
+          console.log('Passwords match');
+          const userId = await db.getIdByUsername(login)
+          req.session.user = { id: userId } 
+          res.redirect('/main_page') // main chat view
+        }
+        else {
+          console.log('Passwords do not match');
+          delete req.session
+          res.redirect('/login')
+        }
+      })
+    }
+    catch (err) {
+      console.log(err);
+    }
+  }
+})
 
 server.listen(port, host, (req, res) => {
   console.log(`Server running at http://${host}:${port}`);
