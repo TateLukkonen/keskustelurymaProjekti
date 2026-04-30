@@ -2,32 +2,57 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chat Room</title>
+    <title>Chat Page</title>
   </head>
-
   <body>
-    <!-- Sidebar (servers / channels) -->
+    <!-- Header -->
     <div>
-      <h3>Servers</h3>
-      <ul>
-        <li># general</li>
-        <li># random</li>
-      </ul>
+      <h1>Location</h1>
+    </div>
+
+    <!-- Top Navigation Buttons -->
+    <div>
+      <button>Home</button>
+      <button>Server</button>
+      <button>Create Server</button>
+      <button>User</button>
+      <button>Settings</button>
     </div>
 
     <hr />
 
-    <!-- Chat messages -->
-    <div id="messages">
-      <p>Welcome to the chat</p>
+    <!-- Server and DM List Box -->
+    <div>
+      <h3>Servers & DMs</h3>
+      <button>Server 1</button>
+      <button>Direct Message 1</button>
+      <button>Direct Message 2</button>
     </div>
 
     <hr />
 
-    <!-- Message input -->
+    <!-- Main Chat Content Area -->
+    <div>
+      <p>Chat Content Area</p>
+    </div>
+
+    <hr />
+
+    <!-- Members List Box -->
+    <div>
+      <h3>Members</h3>
+      <button>AdminUser</button>
+      <button>Friend1</button>
+      <button>Friend2</button>
+    </div>
+
+    <hr />
+
+    <!-- Message Input Area -->
     <form id="chat-form">
+      <button type="button">Add File</button>
       <input type="text" id="message-input" placeholder="Type a message..." />
+      <button type="button">Emoji</button>
       <button type="submit">Send</button>
     </form>
   </body>
