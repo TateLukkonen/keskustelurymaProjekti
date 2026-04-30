@@ -174,12 +174,15 @@ app.post("/create_server", async (req, res) => {
       inviteLink = null;
     }
 
+    
+    
     const data = {
       name: req.body.server_name,
       server_pfp: req.body.server_pfp,
       private: isPrivate,
       server_link: serverLink,
       invite_link: inviteLink,
+      owner: 1,
     };
 
     await db.createServer(data);

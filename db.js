@@ -108,16 +108,33 @@ export async function createServer(data) {
     data.invite_link,
   ]);
 
+  const serverId = result.insertId;
+
+  await connection.execute(
+    `INSERT INTO member_list (server_id, user_id, owner, moderator, join_date)
+   VALUES (?, ?, 1, 1, NOW())`,
+    [serverId, data.owner],
+  );
+
   connection.release();
   return result;
 }
 
-
 export async function getServers() {
-  const connection = await mysql.createConnection(dbconfig)
-  const [rows] = await connection.execute("SELECT * FROM server")
-  await connection.end()
-  return rows
+  const connection = await getConnection();
+
+  const sql = `
+    SELECT server.*,
+           member_list.user_id AS owner_id
+    FROM server
+    LEFT JOIN member_list 
+      ON member_list.server_id = server.server_id
+     AND member_list.owner = 1
+  `;
+
+  const [rows] = await connection.execute(sql);
+  connection.release();
+  return rows;
 }
 
 const registerAccount = async (full_name, username, display_name, email, password, admin, blacklist, status, avatar_url, bio) => {
