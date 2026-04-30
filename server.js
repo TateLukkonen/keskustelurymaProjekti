@@ -6,6 +6,8 @@ import path from "node:path";
 import bcrypt from "bcrypt";
 import http from "node:http";
 import { Server } from "socket.io";
+import crypto from "node:crypto";
+
 
 import config from "./config.json" with { type: "json" };
 import dbconfig from "./dbconfig.json" with { type: "json" };
@@ -72,19 +74,24 @@ app.get("/login", (req, res) => {
   res.render("login", { path: req.path });
 });
 
-app.get("/create_server_settings", (req, res) => {
+app.get("/create_server_settings", isLoggedIn, (req, res) => {
   res.render("create_server_settings", { path: req.path });
 });
 
-app.get("/servers", async (req, res) => {
+app.get("/servers", isLoggedIn, async (req, res) => {
   try {
     const servers = await db.getServers();
-    res.render("servers", { servers });
+
+    res.render("servers", {
+      servers,
+      path: req.path,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).send("Error loading servers");
   }
 });
+
 app.get("/chat", isLoggedIn, (req, res) => {
   res.render("chat", { path: req.path });
 });
@@ -92,7 +99,7 @@ app.get("/register", (req, res) => {
   res.render("register");
 });
 
-//  EXAMPLE GET AND POST METHODS BELOW
+//  GET METHODS
 app.get("/main_page", isLoggedIn, async (req, res) => {
   let connection;
   try {
@@ -122,11 +129,13 @@ app.get("/main_page", isLoggedIn, async (req, res) => {
 
     const channelMsg = await db.getChannelMessages();
     const servers = await db.getServers();
+    const sessionUser = await db.getCurrentSessionUser(req.session.user.email)
 
     res.render("main_page", {
       channelMessages: channelMsg,
       servers: servers,
-      path: req.path,
+      sessionUser: sessionUser[0],
+      path: req.path
     });
   } catch (err) {
     console.error("Database error: " + err);
@@ -159,24 +168,30 @@ io.on("connection", (socket) => {
     await db.deleteMessage(message_id);
     io.emit("delete message", message_id);
   });
-});
-// OLD POST METHODS
+})
 
-import crypto from "node:crypto";
+// POST METHODS
 
 app.post("/create_server", async (req, res) => {
   try {
     const serverLink = crypto.randomBytes(8).toString("hex");
-    const inviteLink = crypto.randomBytes(8).toString("hex");
 
     const isPrivate = req.body.pub_priv === "private_choice" ? 1 : 0;
+
+    let inviteLink;
+
+    if (isPrivate == 1) {
+      inviteLink = crypto.randomBytes(8).toString("hex");
+    } else {
+      inviteLink = null;
+    }
 
     const data = {
       name: req.body.server_name,
       server_pfp: req.body.server_pfp,
       private: isPrivate,
       server_link: serverLink,
-      invite_link: serverLink,
+      invite_link: inviteLink,
     };
 
     await db.createServer(data);
@@ -206,7 +221,6 @@ app.post('/delete_message', async (req, res) => {
 })
 */
 
-// ✅ ADD THIS BLOCK (this was missing after merge)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/");
@@ -220,22 +234,25 @@ const upload = multer({ storage });
 
 app.post("/register", upload.single("pfp"), async (req, res) => {
   try {
-    const { full_name, email, password, username, display_name, bio } =
+    const { full_name, username, password, display_name, email, bio } =
       req.body;
 
-    const pfp_path = req.file ? `/uploads/${req.file.filename}` : null;
+    const pfp_path = req.file ? `/uploads/${req.file.filename}` : '/uploads/default_icon.png';
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await db.createUser({
+    await db.registerAccount(
       full_name,
-      email,
-      password: hashedPassword,
       username,
       display_name,
-      bio,
+      email,
+      hashedPassword,
+      false,
+      false,
+      'offline',
       pfp_path,
-    });
+      bio
+    );
 
     res.redirect("/login");
   } catch (err) {
@@ -245,9 +262,6 @@ app.post("/register", upload.single("pfp"), async (req, res) => {
 });
 
 app.post("/login", async (req, res) => {
-  req.session.user = { user: "user" };
-  res.redirect("/main_page"); // main chat view
-  /*
     if (req.body.email.length != 0 && req.body.password.length != 0) {
         const email = req.body.email
         const password = req.body.password
@@ -262,18 +276,17 @@ app.post("/login", async (req, res) => {
         bcrypt.compare(password, hashedPass, function(err, bcryptRes) {
             if (err) {
                 console.log('Password comparison went wrong: ', err);
-                loggedIn = false
+                delete req.session
                 res.redirect('/login')
             }
             if (bcryptRes) {
                 console.log('Passwords match');
-                loggedIn = true
                 req.session.user = { email: email } 
-                res.redirect('/users') // main chat view
+                res.redirect('/main_page') // main chat view
             }
             else {
                 console.log('Passwords do not match');
-                loggedIn = false
+                delete req.session
                 res.redirect('/login')
             }
         })
@@ -281,8 +294,9 @@ app.post("/login", async (req, res) => {
     else {
         console.log('email or password not filled in');
         res.redirect('/login')
-    */
-});
+    }
+  }
+);
 
 server.listen(port, host, (req, res) => {
   console.log(`Server running at http://${host}:${port}`);

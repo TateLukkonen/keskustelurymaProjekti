@@ -8,21 +8,9 @@ CREATE TABLE server (
    name VARCHAR(100) NOT NULL,
    creation_date DATETIME NOT NULL,
    server_link VARCHAR(100) UNIQUE NOT NULL,
+   invite_link VARCHAR(100) UNIQUE NULL,
    private BOOLEAN NOT NULL,
    server_picture_url VARCHAR(255) NULL
-) ENGINE=InnoDB;
-
-DROP TABLE IF EXISTS invite_links;
-CREATE TABLE invite_links (
-   invite_links_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-   server_id INT NOT NULL,
-   invite_link VARCHAR(255) NULL,
-
-   UNIQUE (invite_link),
-
-   FOREIGN KEY (server_id)
-   REFERENCES server (server_id)
-   ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS users;
@@ -31,12 +19,12 @@ CREATE TABLE users (
 	full_name VARCHAR(100) NOT NULL,
 	username VARCHAR(100) UNIQUE NOT NULL,
 	display_name VARCHAR(100) NOT NULL,
-	email VARCHAR(255) NOT NULL,
+	email VARCHAR(255) UNIQUE NOT NULL,
 	password VARCHAR(255) NOT NULL,
 	admin BOOLEAN NOT NULL,
-	creation_date DATETIME NOT NULL,
+	creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	blacklist BOOLEAN NOT NULL,
-	status ENUM('online', 'offline', 'away', 'busy') NOT NULL,
+	status ENUM('online', 'offline', 'incognito') NOT NULL,
 	avatar_url VARCHAR(255) NOT NULL,
 	bio TEXT NOT NULL
 ) ENGINE=InnoDB;
