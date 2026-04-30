@@ -193,7 +193,7 @@ app.post("/create_server", async (req, res) => {
       private: isPrivate,
       server_link: serverLink,
       invite_link: inviteLink,
-      owner: 1,
+      owner: req.session.user.id,
     };
 
     await db.createServer(data);
