@@ -64,6 +64,10 @@
     justify-content: space-around;
 }
 
+.small-profile .status {
+    font-size: 12px;
+}
+
 .small-profile.online .status {
     color: lime;
 }
@@ -94,21 +98,22 @@
 /* Server / DM list */
 
 .list {
-    width: 8.5%;
+    width: 160px;
+    min-width: 160px;
     display: flex;
     flex-flow: column nowrap;
     background-color: #283848;
-    padding: 8px;
-    padding-right: 0;
+    padding-top: 8px;
 }
 
 .list a {
     transition: background-color 0.2s ease;
+    margin-bottom: 2px;
 }
 
 .list img {
     border-radius: 8px;
-    margin: 2px;
+    margin: 4px;
     outline: 2px solid #c46b1e;
     outline-offset: 2px;
 }
@@ -117,6 +122,7 @@
     display: flex;
     flex-flow: row nowrap;
     margin-bottom: 8px;
+    padding-left: 8px;
 }
 
 .list .convo .name {
@@ -145,7 +151,6 @@
 }
 
 .list a:hover .convo .name p {
-    border-bottom-width: 3px;
     background-color: #283848;
 }
 
@@ -153,7 +158,7 @@
 /* Chat */
 
 .chat {
-    width: 71.5%;
+    width: 70%;
     text-align: center;
     align-content: center;
 }
@@ -163,4 +168,5 @@
 
 .member-list {
     width: 20%;
+    background-color: #283848;
 }

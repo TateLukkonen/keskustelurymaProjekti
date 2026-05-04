@@ -33,11 +33,11 @@
         </div> 
 
         <div class="bottom-section"> <!-- 3 divs -->
-            <%- include('server_dm_list', { data: [{ name: 'SERVER' }, { name: 'SLIME' }] }) %> <!-- server/dm list, def an ejs -->
+            <%- include('server_dm_list', { data: [{ name: 'SERVER' }, { name: 'SLIME' }, { name: 'TERRA' }, { name: 'VELCHAT' }, { name: 'LUNYX' }] }) %> <!-- server/dm list, def an ejs -->
 
             <div class="chat">chat.ejs will be here</div> <!-- chat, should use the ejs file, so rework that -->
 
-            <div class="member-list"></div> <!-- shows all members in the channel, probs ejs  -->
+            <%- include('member_list', { data: [{ user_id: 1, name: 'MEMBER', pfp: '/uploads/default_icon.png', status: 'online', bio: 'this is my bio description'}]}) %> <!-- shows all members in the channel, probs ejs  -->
         </div>
     </div>
 </body>

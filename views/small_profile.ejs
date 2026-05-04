@@ -3,7 +3,7 @@
         <img src="<%= user.icon || '/uploads/default_icon.png'%> " alt="your small profile - profile picture">
     </div>
     <div class="name-status">
-        <div class="name"><%= user.name || 'Username' %></div>
+        <div class="name"><%= user.name.length > 17 ? user.name.slice(0, 17) + '...' : user.name || 'Username' %></div>
         <div class="status"><%= user.status || 'Status' %></div>
     </div>
 </div>

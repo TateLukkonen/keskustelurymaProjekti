@@ -6,7 +6,7 @@ DROP TABLE IF EXISTS server;
 CREATE TABLE server (
    server_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
    name VARCHAR(100) NOT NULL,
-   short_name VARCHAR(6) NOT NULL,
+   short_name VARCHAR(7) NOT NULL,
    creation_date DATETIME NOT NULL,
    server_link VARCHAR(100) UNIQUE NOT NULL,
    invite_link VARCHAR(100) UNIQUE NULL,
@@ -27,7 +27,18 @@ CREATE TABLE users (
 	blacklist BOOLEAN NOT NULL,
 	status ENUM('online', 'offline', 'incognito') NOT NULL,
 	avatar_url VARCHAR(255) NOT NULL,
-	bio TEXT NOT NULL
+	bio TEXT NOT NULL,
+	last_seen_dm_id INT,
+	last_seen_channel_id INT,
+
+	FOREIGN KEY (last_seen_dm_id)
+    REFERENCES dms (dm_id)
+    ON DELETE SET NULL,
+
+	FOREIGN KEY (last_seen_channel_id)
+    REFERENCES channel (channel_id)
+    ON DELETE SET NULL
+
 ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS user_relationship;

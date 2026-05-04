@@ -1,0 +1,15 @@
+<div class="member-list">
+    <% for (m of data) { %>
+        <a href="#">
+            <div class="member">
+                <div class="img-wrap">
+                    <img class="pfp <%= m.status %>" src="<%= m.pfp %>" alt="<%= m.name %>'s profile picture">
+                </div>
+                <div class="info">
+                    <div class="name"><%= m.name %></div>
+                    <div class="bio"><%= m.bio.slice(0, 20) + '...' %></div>
+                </div>
+            </div>
+        </a>
+    <% } %>
+</div>
