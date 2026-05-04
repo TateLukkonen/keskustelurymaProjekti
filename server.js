@@ -132,22 +132,67 @@ app.get("/main_page", isLoggedIn, async (req, res) => {
   }
 });
 
-app.get("/home", (req, res) => {
-  res.render("home", {
-    user: {
-      username: "DemoUser",
-      displayName: "Demo Name",
-      online: true,
-      bio: "This is a test user",
-    },
-    servers: [{ name: "Test Server", members: 10, createdAt: new Date() }],
-  });
+app.get("/home", isLoggedIn, async (req, res) => {
+  let connection;
+  try {
+    connection = await mysql.createConnection({
+      host: dbHost,
+      user: dbUser,
+      password: dbPwd,
+      database: dbName,
+    });
+
+    const sessionUser = await db.getCurrentSessionUser(req.session.user.id)
+
+    res.render("home", {
+      user: {
+        username: sessionUser.username,
+        display_name: sessionUser.display_name,
+        online: sessionUser.status,
+        bio: sessionUser.bio,
+      },
+      servers: [{ name: "Test Server", members: 10, createdAt: new Date() }],
+    })
+  } catch (err) {
+    console.error("Database error: " + err);
+    res.status(500).send("Internal Server Error");
+  }
+
 });
 
 // ... muiden app.get-reittien jatkoksi
 app.get("/chat", isLoggedIn, (req, res) => {
   res.render("chat", { path: req.path });
 });
+
+app.get('/channel', isLoggedIn, async (req, res) => {
+  let connection;
+  try {
+    connection = await mysql.createConnection({
+      host: dbHost,
+      user: dbUser,
+      password: dbPwd,
+      database: dbName,
+    });
+
+    const sessionUser = await db.getCurrentSessionUser(req.session.user.id)
+
+    res.render("channel", {
+      sessionUser: sessionUser[0],
+      path: req.path
+    });
+  } catch (err) {
+    console.error("Database error: " + err);
+    res.status(500).send("Internal Server Error");
+  }
+  if (connection) {
+    try {
+      await connection.end();
+    } catch (closeError) {
+      console.error("Error closing connection:", closeError);
+    }
+  }
+})
 
 // Socket.IO events
 

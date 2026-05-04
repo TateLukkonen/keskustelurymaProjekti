@@ -1,0 +1,22 @@
+body {
+  margin: 0;
+  height: 94vh;
+  font-family: "Nunito", sans-serif;
+  background: #2f4154;
+  color: white;
+}
+
+header {
+  background: #8e44ad;
+  height: 20px;
+  padding: 10px;
+  text-align: center;
+  color: #67327e;
+  border-bottom: 4px solid #67327e;
+  user-select: none;
+}
+
+a { /* temporary, so we can see the links */
+    color: white;
+    text-decoration: none;
+}

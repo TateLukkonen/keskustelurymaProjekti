@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/styles/basic.css">
+    <link rel="stylesheet" href="/styles/channel.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
+</head>
+<body>
+    <%- include('header') %>
+
+    <div class="content">
+        <div class="top-section"> <!-- this has home, server/dm switch, directory, profile and settings -->
+            <div class="top-left">
+                <a href="/home">HOME ICON</a>
+                <button>SERVER/DM SWITCH</button> <!-- will be an <a> element based on if in server or dm rn -->
+            </div>
+
+            <div class="directory"> <!-- example: | home > servers > Server Name > Channel Name |, its all <a> elements, might need to be an ejs file-->
+                <p>| <a href="/home">home</a> > Server Name > Channel Name |</p>
+            </div>
+
+            <div class="profile-settings">
+                <%- include('small_profile', { user: { icon: sessionUser.avatar_url, name: sessionUser.display_name, status: sessionUser.status }}) %>
+                <a href="/user_settings">SETTINGS ICON</a> <!-- links nowhere rn -->
+            </div>
+
+        </div> 
+
+        <div class="bottom-section"> <!-- 3 divs -->
+            <%- include('server_dm_list', { data: [{ name: 'SERVER' }, { name: 'SLIME' }] }) %> <!-- server/dm list, def an ejs -->
+
+            <div class="chat">chat.ejs will be here</div> <!-- chat, should use the ejs file, so rework that -->
+
+            <div class="member-list"></div> <!-- shows all members in the channel, probs ejs  -->
+        </div>
+    </div>
+</body>
+</html>

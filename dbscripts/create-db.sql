@@ -6,6 +6,7 @@ DROP TABLE IF EXISTS server;
 CREATE TABLE server (
    server_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
    name VARCHAR(100) NOT NULL,
+   short_name VARCHAR(6) NOT NULL,
    creation_date DATETIME NOT NULL,
    server_link VARCHAR(100) UNIQUE NOT NULL,
    invite_link VARCHAR(100) UNIQUE NULL,

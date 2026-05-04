@@ -1,15 +1,3 @@
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #2f4154;
-  color: white;
-}
-
-header {
-  background: #8e44ad;
-  height: 20px;
-}
-
 .server-toggle {
   text-align: center;
 }
@@ -52,6 +40,14 @@ header {
   width: 10px;
   height: 10px;
   background: red;
+  border-radius: 50%;
+}
+
+.status .incognito {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background: gray;
   border-radius: 50%;
 }
 

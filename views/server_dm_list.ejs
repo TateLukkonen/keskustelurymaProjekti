@@ -1,0 +1,14 @@
+<div class="list">
+    <% for (convo of data) { %>
+        <a href="#">
+            <div class="convo">
+                    <img src="/uploads/default_icon.png" alt="<%= convo.name %>">
+                <div class="name">
+                    <p>
+                        <%= convo.name %>
+                    </p>
+                </div>
+            </div>
+        </a>
+    <% } %>
+</div>
