@@ -5,10 +5,9 @@ body {
   color: white;
 }
 
-.top-bar {
+header {
   background: #8e44ad;
   height: 20px;
-  width: 100%;
 }
 
 .container {
@@ -45,12 +44,14 @@ body {
   flex-flow: column nowrap;
   width: 20%;
   text-align: center;
+  justify-content: center;
+  align-items: center;
 }
 
 .profile-pic {
   display: flex;
-  flex-flow: row nowrap;
-  padding-left: 130px;
+  align-items: center;
+  justify-content: center;
 }
 
 .profile-pic img {
@@ -65,6 +66,14 @@ body {
 
 .bottom-section {
   width: 100%;
+}
+
+.status .incognito {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background: gray;
+  border-radius: 50%;
 }
 
 .server-toggle {

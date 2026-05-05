@@ -14,8 +14,8 @@ import db from "./db.js";
 import { fileURLToPath } from "node:url";
 import multer from "multer";
 
-// Lets
-//let loggedIn = false
+// RegEx
+const regEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Constants
 const { host, port } = config;
@@ -109,9 +109,9 @@ app.get("/main_page", isLoggedIn, async (req, res) => {
       database: dbName,
     });
 
-    const channelMsg = await db.getChannelMessages();
+    const channelMsg = await db.getChannelMessages(1);
     const servers = await db.getServers();
-    const sessionUser = await db.getCurrentSessionUser(req.session.user.email);
+    const sessionUser = await db.getCurrentSessionUser(req.session.user.id);
 
     res.render("main_page", {
       channelMessages: channelMsg,
@@ -132,21 +132,57 @@ app.get("/main_page", isLoggedIn, async (req, res) => {
   }
 });
 
-app.get("/home", (req, res) => {
-  res.render("home", {
-    user: {
-      username: "DemoUser",
-      displayName: "Demo Name",
-      online: true,
-      bio: "This is a test user",
-    },
-    servers: [{ name: "Test Server", members: 10, createdAt: new Date() }],
-  });
+app.get("/home", isLoggedIn, async (req, res) => {
+  let connection;
+  try {
+    connection = await mysql.createConnection({
+      host: dbHost,
+      user: dbUser,
+      password: dbPwd,
+      database: dbName,
+    });
+
+    const sessionUser = await db.getCurrentSessionUser(req.session.user.id);
+    console.log("sessionUser:", sessionUser);
+
+    res.render("home", {
+      user: sessionUser[0],
+      servers: [{ name: "Test Server", members: 10, createdAt: new Date() }],
+    });
+  } catch (err) {
+    console.error("Database error: " + err);
+    res.status(500).send("Internal Server Error");
+  }
 });
 
 // ... muiden app.get-reittien jatkoksi
 app.get("/chat", isLoggedIn, (req, res) => {
   res.render("chat", { path: req.path });
+});
+
+app.get("/channel/:id", isLoggedIn, async (req, res) => {
+  const channelId = req.params.id;
+
+  try {
+    console.log("Channel ID:", channelId);
+
+    if (!channelId) {
+      return res.status(400).send("Channel ID missing");
+    }
+
+    const channelMessages = await db.getChannelMessages(channelId);
+    const sessionUser = await db.getCurrentSessionUser(req.session.user.id);
+
+    res.render("channel", {
+      channelMessages,
+      sessionUser: sessionUser[0],
+      channelId,
+      path: req.path,
+    });
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).send("Internal Server Error");
+  }
 });
 
 // Socket.IO events
@@ -191,6 +227,7 @@ app.post("/create_server", async (req, res) => {
       private: isPrivate,
       server_link: serverLink,
       invite_link: inviteLink,
+      owner: req.session.user.id,
     };
 
     await db.createServer(data);
@@ -263,36 +300,75 @@ app.post("/register", upload.single("pfp"), async (req, res) => {
 });
 
 app.post("/login", async (req, res) => {
-  if (req.body.email.length != 0 && req.body.password.length != 0) {
-    const email = req.body.email;
-    const password = req.body.password;
+  const login = req.body.login;
+  const password = req.body.password;
 
-    async function login(email, password) {
-      const foundUserHashedPass = await db.attemptLogin(email, password);
-      return foundUserHashedPass;
+  if (regEmail.test(login) === true) {
+    try {
+      async function loginFunction(login, password) {
+        const foundUserHashedPass = await db.attemptLogin(
+          false,
+          login,
+          password,
+        );
+        return foundUserHashedPass;
+      }
+
+      const hashedPass = await loginFunction(login, password);
+
+      bcrypt.compare(password, hashedPass, async function (err, bcryptRes) {
+        if (err) {
+          console.log("Password comparison went wrong: ", err);
+          delete req.session;
+          res.redirect("/login");
+        }
+        if (bcryptRes) {
+          console.log("Passwords match");
+          const userId = await db.getIdByEmail(login);
+          req.session.user = { id: userId };
+          res.redirect("/main_page"); // main chat view
+        } else {
+          console.log("Passwords do not match");
+          delete req.session;
+          res.redirect("/login");
+        }
+      });
+    } catch (err) {
+      console.log(err);
     }
-
-    const hashedPass = await login(email, password);
-
-    bcrypt.compare(password, hashedPass, function (err, bcryptRes) {
-      if (err) {
-        console.log("Password comparison went wrong: ", err);
-        delete req.session;
-        res.redirect("/login");
+  } else if (regEmail.test(login) === false) {
+    try {
+      async function loginFunction(login, password) {
+        const foundUserHashedPass = await db.attemptLogin(
+          login,
+          false,
+          password,
+        );
+        return foundUserHashedPass;
       }
-      if (bcryptRes) {
-        console.log("Passwords match");
-        req.session.user = { email: email };
-        res.redirect("/main_page"); // main chat view
-      } else {
-        console.log("Passwords do not match");
-        delete req.session;
-        res.redirect("/login");
-      }
-    });
-  } else {
-    console.log("email or password not filled in");
-    res.redirect("/login");
+
+      const hashedPass = await loginFunction(login, password);
+
+      bcrypt.compare(password, hashedPass, async function (err, bcryptRes) {
+        if (err) {
+          console.log("Password comparison went wrong: ", err);
+          delete req.session;
+          res.redirect("/login");
+        }
+        if (bcryptRes) {
+          console.log("Passwords match");
+          const userId = await db.getIdByUsername(login);
+          req.session.user = { id: userId };
+          res.redirect("/main_page"); // main chat view
+        } else {
+          console.log("Passwords do not match");
+          delete req.session;
+          res.redirect("/login");
+        }
+      });
+    } catch (err) {
+      console.log(err);
+    }
   }
 });
 

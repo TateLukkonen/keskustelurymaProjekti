@@ -4,69 +4,67 @@
     <meta charset="UTF-8">
     <title>Home</title>
     <link rel="stylesheet" href="/styles/home.css">
+    <link rel="stylesheet" href="/styles/basic.css">
 </head>
 <body>
+    <%- include('header') %>
 
-<header class="top-bar"></header>
-
-<div class="container">
-
-    
-    <section class="top-section">
+    <div class="container">
 
         
+        <section class="top-section">
+         
+            <div class="left-info">
+                <h2><%= user.username %></h2>
 
-        <div class="left-info">
-    <h2><%= user.username %></h2>
+                <p class="display-name">Display name: <%= user.display_name %></p>
 
-    <p class="display-name">Display name: <%= user.displayName %></p>
+                <form action="/update-profile" method="POST" class="edit-form">
+                    <input type="text" name="displayName" placeholder="Edit display name">
+                    <button type="submit">Save changes</button>
+                </form>
 
-    <form action="/update-profile" method="POST" class="edit-form">
-        <input type="text" name="displayName" placeholder="Edit display name">
-        <button type="submit">Save changes</button>
-    </form>
-
-    <div class="status">
-        <span>Status:</span>
-        <span class="<%= user.online ? 'online' : 'offline' %>"></span>
-    </div>
-</div>
-
-    
-        <div class="profile-center">
-            <h2><%= user.username %></h2>
-
-            <div class="profile-pic">
-                <img src="<%= user.pfp || '/uploads/default_icon.png' %>" alt="PFP">
+                <div class="status">
+                    <span>Status:</span>
+                    <span class="<%= user.status %>"></span>
+                </div>
             </div>
-        </div>
+        
+            <div class="profile-center">
+                <h2><%= user.username %></h2>
 
-        <div class="bio">
+                <div class="profile-pic">
+                    <img src="<%= user.avatar_url || '/uploads/default_icon.png' %>" alt="PFP">
+                </div>
+            </div>
+
+            
+            <div class="bio">
                 <h3>Bio</h3>
                 <p><%= user.bio || "No bio yet..." %></p>
-        </div>
+            </div>
 
-    </section>
-    
-    
+        </section>
+        
+        
 
-    
-    <section class="bottom-section">
+        
+        <section class="bottom-section">
 
-        <div class="server-toggle">
-            <button onclick="showPublic()">Public server</button>
-            <button onclick="showPrivate()">Private server</button>
-        </div>
+            <div class="server-toggle">
+                <button onclick="showPublic()">Public server</button>
+                <button onclick="showPrivate()">Private server</button>
+            </div>
 
-        <div class="servers">
-            <% servers.forEach(server => { %>
-                <%- include('server_card', { server }) %>
-            <% }) %>
-        </div>
+            <div class="servers">
+                <% servers.forEach(server => { %>
+                    <%- include('server_card', { server }) %>
+                <% }) %>
+            </div>
 
-    </section>
+        </section>
 
-</div>
+    </div>
 
 </body>
 </html>

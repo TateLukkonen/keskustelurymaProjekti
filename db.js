@@ -12,133 +12,26 @@ const getConnection = async () => {
   }
 };
 
-const getUsers = async () => {
+const getChannelMessages = async (channel_id) => {
   try {
     const connection = await getConnection();
-    const sql = `
-      SELECT customer.name AS 'customer',
-      system_user.id AS 'id',
-      system_user.fullname AS 'full name',
-      system_user.email AS 'email',
-      CASE 
-          WHEN system_user.admin = 0 THEN 'false'
-          ELSE 'true'
-      END AS 'admin'
-      FROM customer
-      RIGHT JOIN system_user
-      ON customer.id = system_user.customer_id
-    `;
-    const [users] = await connection.execute(sql);
-    connection.release();
-    return users;
-  } catch (error) {
-    console.error("Error getting users:", error);
-    throw error;
-  }
-};
 
-const registerAccount = async (
-  full_name,
-  username,
-  display_name,
-  email,
-  password,
-  admin,
-  blacklist,
-  status,
-  avatar_url,
-  bio,
-) => {
-  try {
-    const connection = await getConnection();
     const sql = `
-      INSERT INTO users 
-      (full_name, username, display_name, email, password, admin, blacklist, status, avatar_url, bio)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-    await connection.execute(sql, [
-      full_name,
-      username,
-      display_name,
-      email,
-      password,
-      admin,
-      blacklist,
-      status,
-      avatar_url,
-      bio,
-    ]);
-    connection.release();
-  } catch (error) {
-    console.error("Error registering account:", error);
-    throw error;
-  }
-};
-
-const attemptLogin = async (email) => {
-  try {
-    const connection = await getConnection();
-    const sql = `
-      SELECT email, password
-      FROM users
-      WHERE email = ?
-    `;
-    const [rows] = await connection.execute(sql, [email]);
-    connection.release();
-
-    if (rows[0]) {
-      return rows[0].password;
-    } else {
-      return false;
-    }
-  } catch (error) {
-    console.error("Error attempting login:", error);
-    throw error;
-  }
-};
-
-const getCurrentSessionUser = async (email) => {
-  try {
-    const connection = await getConnection();
-    const sql = `
-      SELECT user_id,
-      full_name,
-      username,
-      display_name,
-      email,
-      admin,
-      creation_date,
-      blacklist,
-      status,
-      avatar_url,
-      bio
-      FROM users
-      WHERE email = ?
-    `;
-    const [user] = await connection.execute(sql, [email]);
-    connection.release();
-    return user;
-  } catch (error) {
-    console.error("Error getting current session user:", error);
-    throw error;
-  }
-};
-
-const getChannelMessages = async () => {
-  try {
-    const connection = await getConnection();
-    const sql = `
-      SELECT channel_messages.message_id,
-      users.display_name,
-      channel_messages.user_id,
-      channel_messages.message,
-      channel_messages.creation_date
+      SELECT 
+        channel_messages.message_id,
+        users.display_name,
+        channel_messages.user_id,
+        channel_messages.message,
+        channel_messages.creation_date
       FROM channel_messages
-      JOIN users
-      WHERE channel_messages.channel_id = 1
+      JOIN users 
+        ON users.user_id = channel_messages.user_id
+      WHERE channel_messages.channel_id = ?
     `;
-    const [rows] = await connection.execute(sql);
+
+    const [rows] = await connection.execute(sql, [channel_id]);
     connection.release();
+
     return rows;
   } catch (error) {
     console.error("Error getting channel messages:", error);
@@ -216,26 +109,199 @@ export async function createServer(data) {
     data.invite_link,
   ]);
 
+  const serverId = result.insertId;
+
+  await connection.execute(
+    `INSERT INTO member_list (server_id, user_id, owner, moderator, join_date)
+   VALUES (?, ?, 1, 1, NOW())`,
+    [serverId, data.owner],
+  );
+
   connection.release();
   return result;
 }
 
 export async function getServers() {
-  const connection = await mysql.createConnection(dbconfig);
-  const [rows] = await connection.execute("SELECT * FROM server");
-  await connection.end();
+  const connection = await getConnection();
+
+  const sql = `
+    SELECT 
+    server.server_id,
+    server.name,
+    server.private,
+    server.invite_link,
+    server.server_link,
+    users.user_id AS owner_id,
+    users.username AS owner_username
+    FROM server
+    JOIN member_list 
+    ON member_list.server_id = server.server_id
+    JOIN users
+    ON users.user_id = member_list.user_id
+    WHERE member_list.owner = 1;
+  `;
+
+  const [rows] = await connection.execute(sql);
+  connection.release();
   return rows;
 }
 
+const registerAccount = async (
+  full_name,
+  username,
+  display_name,
+  email,
+  password,
+  admin,
+  blacklist,
+  status,
+  avatar_url,
+  bio,
+) => {
+  try {
+    const connection = await getConnection();
+    const sql = `
+                    INSERT INTO users (full_name, username, display_name, email, password, admin, blacklist, status, avatar_url, bio)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    `;
+    await connection.execute(sql, [
+      full_name,
+      username,
+      display_name,
+      email,
+      password,
+      admin,
+      blacklist,
+      status,
+      avatar_url,
+      bio,
+    ]);
+    connection.release();
+  } catch (error) {
+    console.error("Error registering account:", error);
+    throw error;
+  }
+};
+
+const attemptLogin = async (username, email, password) => {
+  if (username == false) {
+    try {
+      const connection = await getConnection();
+      const sql = `
+                    SELECT email AS 'email',
+                    password AS 'password'
+                    FROM users
+                    WHERE email = ?                    
+                    `;
+      const [bool] = await connection.execute(sql, [email]);
+      connection.release();
+
+      if (bool[0] != undefined) {
+        console.log("User found");
+        return bool[0].password;
+      } else {
+        console.log("No user found");
+        return false;
+      }
+    } catch (error) {
+      console.log("Error attempting login:", error);
+    }
+  } else if (email == false) {
+    try {
+      const connection = await getConnection();
+      const sql = `
+                    SELECT username,
+                    password
+                    FROM users
+                    WHERE username = ?                    
+                    `;
+      const [bool] = await connection.execute(sql, [username]);
+      connection.release();
+
+      if (bool[0] != undefined) {
+        console.log("User found");
+        return bool[0].password;
+      } else {
+        console.log("No user found");
+        return false;
+      }
+    } catch (error) {
+      console.log("Error attempting login:", error);
+    }
+  }
+};
+
+const getCurrentSessionUser = async (user_id) => {
+  try {
+    const connection = await getConnection();
+    const sql = `
+                SELECT user_id,
+                full_name,
+                username,
+                display_name,
+                email,
+                admin,
+                creation_date,
+                blacklist,
+                status,
+                avatar_url,
+                bio
+                FROM users
+                WHERE user_id = ?                 
+                `;
+    const [user] = await connection.execute(sql, [user_id]);
+    connection.release();
+    return user;
+  } catch (error) {
+    console.error("Error getting current session user:", error);
+    throw error;
+  }
+};
+
+const getIdByEmail = async (email) => {
+  try {
+    const connection = await getConnection();
+    const sql = `
+                    SELECT user_id
+                    FROM users
+                    WHERE email = ?
+                    `;
+    const [rows] = await connection.execute(sql, [email]);
+    connection.release();
+    return rows[0]?.user_id;
+  } catch (error) {
+    console.error("Error getting user ID by email:", error);
+    throw error;
+  }
+};
+
+const getIdByUsername = async (username) => {
+  try {
+    const connection = await getConnection();
+    const sql = `
+                    SELECT user_id
+                    FROM users
+                    WHERE username = ?
+                    `;
+    const [rows] = await connection.execute(sql, [username]);
+    connection.release();
+    return rows[0]?.user_id;
+  } catch (error) {
+    console.error("Error getting user ID by username:", error);
+    throw error;
+  }
+};
+
 export default {
-  getUsers,
-  registerAccount,
-  attemptLogin,
-  getCurrentSessionUser,
   getChannelMessages,
   getChannelMessage,
   setChannelMessages,
   deleteMessage,
   createServer,
   getServers,
+  attemptLogin,
+  getCurrentSessionUser,
+  getIdByEmail,
+  getIdByUsername,
+  registerAccount,
 };
