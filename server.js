@@ -109,9 +109,9 @@ app.get("/main_page", isLoggedIn, async (req, res) => {
       database: dbName,
     });
 
-    const channelMsg = await db.getChannelMessages();
+    const channelMsg = await db.getChannelMessages(1);
     const servers = await db.getServers();
-    const sessionUser = await db.getCurrentSessionUser(req.session.user.id)
+    const sessionUser = await db.getCurrentSessionUser(req.session.user.id);
 
     res.render("main_page", {
       channelMessages: channelMsg,
@@ -142,7 +142,7 @@ app.get("/home", isLoggedIn, async (req, res) => {
       database: dbName,
     });
 
-    const sessionUser = await db.getCurrentSessionUser(req.session.user.id)
+    const sessionUser = await db.getCurrentSessionUser(req.session.user.id);
 
     res.render("home", {
       user: {
@@ -152,12 +152,11 @@ app.get("/home", isLoggedIn, async (req, res) => {
         bio: sessionUser.bio,
       },
       servers: [{ name: "Test Server", members: 10, createdAt: new Date() }],
-    })
+    });
   } catch (err) {
     console.error("Database error: " + err);
     res.status(500).send("Internal Server Error");
   }
-
 });
 
 // ... muiden app.get-reittien jatkoksi
@@ -165,34 +164,30 @@ app.get("/chat", isLoggedIn, (req, res) => {
   res.render("chat", { path: req.path });
 });
 
-app.get('/channel', isLoggedIn, async (req, res) => {
-  let connection;
-  try {
-    connection = await mysql.createConnection({
-      host: dbHost,
-      user: dbUser,
-      password: dbPwd,
-      database: dbName,
-    });
+app.get("/channel/:id", isLoggedIn, async (req, res) => {
+  const channelId = req.params.id;
 
-    const sessionUser = await db.getCurrentSessionUser(req.session.user.id)
+  try {
+    console.log("Channel ID:", channelId);
+
+    if (!channelId) {
+      return res.status(400).send("Channel ID missing");
+    }
+
+    const channelMessages = await db.getChannelMessages(channelId);
+    const sessionUser = await db.getCurrentSessionUser(req.session.user.id);
 
     res.render("channel", {
+      channelMessages,
       sessionUser: sessionUser[0],
-      path: req.path
+      channelId,
+      path: req.path,
     });
   } catch (err) {
-    console.error("Database error: " + err);
+    console.error("Database error:", err);
     res.status(500).send("Internal Server Error");
   }
-  if (connection) {
-    try {
-      await connection.end();
-    } catch (closeError) {
-      console.error("Error closing connection:", closeError);
-    }
-  }
-})
+});
 
 // Socket.IO events
 

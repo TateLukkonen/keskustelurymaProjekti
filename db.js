@@ -12,21 +12,26 @@ const getConnection = async () => {
   }
 };
 
-const getChannelMessages = async () => {
+const getChannelMessages = async (channel_id) => {
   try {
     const connection = await getConnection();
+
     const sql = `
-      SELECT channel_messages.message_id,
-      users.display_name,
-      channel_messages.user_id,
-      channel_messages.message,
-      channel_messages.creation_date
+      SELECT 
+        channel_messages.message_id,
+        users.display_name,
+        channel_messages.user_id,
+        channel_messages.message,
+        channel_messages.creation_date
       FROM channel_messages
-      JOIN users
-      WHERE channel_messages.channel_id = 1
+      JOIN users 
+        ON users.user_id = channel_messages.user_id
+      WHERE channel_messages.channel_id = ?
     `;
-    const [rows] = await connection.execute(sql);
+
+    const [rows] = await connection.execute(sql, [channel_id]);
     connection.release();
+
     return rows;
   } catch (error) {
     console.error("Error getting channel messages:", error);
