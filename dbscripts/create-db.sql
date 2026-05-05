@@ -28,76 +28,7 @@ CREATE TABLE users (
 	status ENUM('online', 'offline', 'incognito') NOT NULL,
 	avatar_url VARCHAR(255) NOT NULL,
 	bio TEXT NOT NULL,
-	last_seen_dm_id INT,
-	last_seen_channel_id INT,
-
-	FOREIGN KEY (last_seen_dm_id)
-    REFERENCES dms (dm_id)
-    ON DELETE SET NULL,
-
-	FOREIGN KEY (last_seen_channel_id)
-    REFERENCES channel (channel_id)
-    ON DELETE SET NULL
-
-) ENGINE=InnoDB;
-
-DROP TABLE IF EXISTS user_relationship;
-CREATE TABLE user_relationship (
-    relationship_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_1 INT NOT NULL,
-    user_2 INT NOT NULL,
-    status ENUM('pending', 'accepted', 'blocked') NOT NULL,
-    requester_id INT NOT NULL,
-    friends_since DATETIME NULL,
-
-    UNIQUE (user_1, user_2),
-
-    FOREIGN KEY (user_1)
-        REFERENCES users (user_id)
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (user_2)
-        REFERENCES users (user_id)
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (requester_id)
-        REFERENCES users (user_id)
-        ON DELETE CASCADE
-) ENGINE=InnoDB;
-
-DROP TABLE IF EXISTS  dms;
-CREATE TABLE dms (
-	dm_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-	user_1 INT NOT NULL,
-	user_2 INT NOT NULL,
-	creation_date DATETIME NOT NULL,
-
-    UNIQUE (user_1, user_2),
-	
-	FOREIGN KEY (user_1)
-	REFERENCES users (user_id)
-    ON DELETE CASCADE,
-	
-	FOREIGN KEY (user_2)
-	REFERENCES users (user_id)
-    ON DELETE CASCADE
-) ENGINE=InnoDB;
-
-DROP TABLE IF EXISTS dm_messages;
-CREATE TABLE dm_messages (
-	message_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-	dm_id INT NOT NULL,
-	user_id INT NULL,
-	message MEDIUMTEXT NOT NULL,
-	creation_date DATETIME NOT NULL,
-	
-	FOREIGN KEY (dm_id)
-	REFERENCES dms (dm_id)
-    ON DELETE CASCADE,
-	
-	FOREIGN KEY (user_id)
-	REFERENCES users (user_id)
-    ON DELETE SET NULL
+	reputation INT NOT NULL
 ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS ban_list;
@@ -163,4 +94,43 @@ CREATE TABLE channel_messages (
 	REFERENCES users (user_id)
     ON DELETE SET NULL
 ) ENGINE=InnoDB;
+
+DROP TABLE IF EXISTS posts;
+CREATE TABLE posts (
+	post_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	server_id INT NOT NULL,
+    user_id INT NOT NULL,
+    title VARCHAR(100) NOT NULL,
+    img VARCHAR(255) NULL,
+    text_content TEXT NULL,
+    creation_date DATETIME NOT NULL,
+	upvotes INT NOT NULL DEFAULT 0,
+	downvotes INT NOT NULL DEFAULT 0,
+	
+	FOREIGN KEY (server_id)
+	REFERENCES server (server_id)
+    ON DELETE CASCADE,
+	
+	FOREIGN KEY (user_id)
+	REFERENCES users (user_id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+DROP TABLE IF EXISTS post_comments;
+CREATE TABLE post_comments(
+    comment_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    post_id INT NOT NULL,
+    user_id INT NOT NULL,
+    text_content TEXT NOT NULL,
+    creation_date DATETIME NOT NULL,
+	
+	FOREIGN KEY (post_id)
+	REFERENCES posts (post_id)
+    ON DELETE CASCADE,
+	
+	FOREIGN KEY (user_id)
+	REFERENCES users (user_id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB;
+
 

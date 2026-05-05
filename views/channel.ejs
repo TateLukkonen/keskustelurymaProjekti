@@ -18,7 +18,6 @@
         <div class="top-section"> <!-- this has home, server/dm switch, directory, profile and settings -->
             <div class="top-left">
                 <a href="/home">HOME ICON</a>
-                <button>SERVER/DM SWITCH</button> <!-- will be an <a> element based on if in server or dm rn -->
             </div>
 
             <div class="directory"> <!-- example: | home > servers > Server Name > Channel Name |, its all <a> elements, might need to be an ejs file-->
@@ -33,7 +32,7 @@
         </div> 
 
         <div class="bottom-section"> <!-- 3 divs -->
-            <%- include('server_dm_list', { data: [{ name: 'SERVER' }, { name: 'SLIME' }, { name: 'TERRA' }, { name: 'VELCHAT' }, { name: 'LUNYX' }] }) %> <!-- server/dm list, def an ejs -->
+            <%- include('server_list', { data: [{ name: 'SERVER' }, { name: 'SLIME' }, { name: 'TERRA' }, { name: 'VELCHAT' }, { name: 'LUNYX' }] }) %> <!-- server/dm list, def an ejs -->
 
             <div class="chat">chat.ejs will be here</div> <!-- chat, should use the ejs file, so rework that -->
 
