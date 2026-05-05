@@ -29,15 +29,7 @@ CREATE TABLE users (
 	avatar_url VARCHAR(255) NOT NULL,
 	bio TEXT NOT NULL,
 	last_seen_dm_id INT,
-	last_seen_channel_id INT,
-
-	FOREIGN KEY (last_seen_dm_id)
-    REFERENCES dms (dm_id)
-    ON DELETE SET NULL,
-
-	FOREIGN KEY (last_seen_channel_id)
-    REFERENCES channel (channel_id)
-    ON DELETE SET NULL
+	last_seen_channel_id INT
 
 ) ENGINE=InnoDB;
 
