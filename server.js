@@ -164,23 +164,23 @@ app.get("/chat", isLoggedIn, (req, res) => {
   res.render("chat", { path: req.path });
 });
 
-app.get("/channel/:id", isLoggedIn, async (req, res) => {
-  const channelId = req.params.id;
+app.get("/server/:id", isLoggedIn, async (req, res) => {
+  const serverId = req.params.id;
 
   try {
-    console.log("Channel ID:", channelId);
+    console.log("Server ID:", serverId);
 
-    if (!channelId) {
-      return res.status(400).send("Channel ID missing");
+    if (!serverId) {
+      return res.status(400).send("Server ID missing");
     }
 
-    const channelMessages = await db.getChannelMessages(channelId);
+    const channelMessages = await db.getChannelMessages(serverId); // gotta change to posts on db level
     const sessionUser = await db.getCurrentSessionUser(req.session.user.id);
 
-    res.render("channel", {
-      channelMessages,
+    res.render("server", {
+      channelMessages, // change to posts after
       sessionUser: sessionUser[0],
-      channelId,
+      serverId,
       path: req.path,
     });
   } catch (err) {
