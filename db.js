@@ -12,21 +12,26 @@ const getConnection = async () => {
   }
 };
 
-const getChannelMessages = async () => {
+const getChannelMessages = async (channel_id) => {
   try {
     const connection = await getConnection();
+
     const sql = `
-      SELECT channel_messages.message_id,
-      users.display_name,
-      channel_messages.user_id,
-      channel_messages.message,
-      channel_messages.creation_date
+      SELECT 
+        channel_messages.message_id,
+        users.display_name,
+        channel_messages.user_id,
+        channel_messages.message,
+        channel_messages.creation_date
       FROM channel_messages
-      JOIN users
-      WHERE channel_messages.channel_id = 1
+      JOIN users 
+        ON users.user_id = channel_messages.user_id
+      WHERE channel_messages.channel_id = ?
     `;
-    const [rows] = await connection.execute(sql);
+
+    const [rows] = await connection.execute(sql, [channel_id]);
     connection.release();
+
     return rows;
   } catch (error) {
     console.error("Error getting channel messages:", error);
@@ -123,15 +128,17 @@ export async function getServers() {
     SELECT 
     server.server_id,
     server.name,
-    member_list.user_id AS owner_id,
-    users.username AS owner_username,
-    users.display_name AS owner_display_name
+    server.private,
+    server.invite_link,
+    server.server_link,
+    users.user_id AS owner_id,
+    users.username AS owner_username
     FROM server
-    LEFT JOIN member_list 
+    JOIN member_list 
     ON member_list.server_id = server.server_id
-    AND member_list.owner = 1
-    LEFT JOIN users
-    ON users.user_id = member_list.user_id;
+    JOIN users
+    ON users.user_id = member_list.user_id
+    WHERE member_list.owner = 1;
   `;
 
   const [rows] = await connection.execute(sql);
