@@ -123,15 +123,17 @@ export async function getServers() {
     SELECT 
     server.server_id,
     server.name,
-    member_list.user_id AS owner_id,
-    users.username AS owner_username,
-    users.display_name AS owner_display_name
+    server.private,
+    server.invite_link,
+    server.server_link,
+    users.user_id AS owner_id,
+    users.username AS owner_username
     FROM server
-    LEFT JOIN member_list 
+    JOIN member_list 
     ON member_list.server_id = server.server_id
-    AND member_list.owner = 1
-    LEFT JOIN users
-    ON users.user_id = member_list.user_id;
+    JOIN users
+    ON users.user_id = member_list.user_id
+    WHERE member_list.owner = 1;
   `;
 
   const [rows] = await connection.execute(sql);
