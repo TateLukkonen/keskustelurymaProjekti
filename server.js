@@ -15,7 +15,7 @@ import { fileURLToPath } from "node:url";
 import multer from "multer";
 
 // RegEx
-const regEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const regEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Constants
 const { host, port } = config;
@@ -91,8 +91,8 @@ app.get("/servers", isLoggedIn, async (req, res) => {
   }
 });
 
-app.get("/chat", isLoggedIn, (req, res) => {
-  res.render("chat", { path: req.path });
+app.get("/Post", isLoggedIn, (req, res) => {
+  res.render("Post", { path: req.path });
 });
 app.get("/register", (req, res) => {
   res.render("register");
@@ -177,10 +177,19 @@ app.get("/server/:id", isLoggedIn, async (req, res) => {
     const channelMessages = await db.getChannelMessages(serverId); // gotta change to posts on db level
     const sessionUser = await db.getCurrentSessionUser(req.session.user.id);
 
+    const userId = req.session.user.id;
+
+    const joined = await db.isMember(channelId, userId);
+
+    const userId = req.session.user.id;
+
+    const joined = await db.isMember(channelId, userId);
+
     res.render("server", {
       channelMessages, // change to posts after
       sessionUser: sessionUser[0],
       serverId,
+      joined,
       path: req.path,
     });
   } catch (err) {
@@ -198,14 +207,30 @@ io.on("connection", (socket) => {
   });
 
   socket.on("chat message", async (msg) => {
-    const msgId = await db.setChannelMessages(msg);
-    const msgInfo = await db.getChannelMessage(msgId.message_id);
-    io.emit("chat message", msgInfo[0]);
+    try {
+      const isMember = await db.isMember(msg.serverId, msg.userId);
+
+      if (!isMember) return;
+
+      const msgId = await db.setChannelMessages(msg);
+      const msgInfo = await db.getChannelMessage(msgId.message_id);
+
+      io.to(`server_${msg.serverId}`).emit("chat message", msgInfo[0]);
+    } catch (err) {
+      console.error("Socket message error:", err);
+    }
   });
 
   socket.on("delete message", async (message_id) => {
     await db.deleteMessage(message_id);
     io.emit("delete message", message_id);
+  });
+});
+
+io.on("connection", (socket) => {
+  socket.on("join_server_room", (serverId) => {
+    socket.join(`server_${serverId}`);
+    console.log("joined room:", serverId);
   });
 });
 
@@ -225,10 +250,9 @@ app.post("/create_server", async (req, res) => {
       inviteLink = null;
     }
 
-    
-    
     const data = {
       name: req.body.server_name,
+      short_name: req.body.short_name,
       server_pfp: req.body.server_pfp,
       private: isPrivate,
       server_link: serverLink,
@@ -242,6 +266,20 @@ app.post("/create_server", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send("Error creating server");
+  }
+});
+
+app.post("/join_server", isLoggedIn, async (req, res) => {
+  try {
+    const serverId = req.body.server_id;
+    const userId = req.session.user.id;
+
+    await db.joinServer(serverId, userId);
+
+    res.redirect(`/channel/${serverId}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Failed to join server");
   }
 });
 
@@ -306,74 +344,77 @@ app.post("/register", upload.single("pfp"), async (req, res) => {
 });
 
 app.post("/login", async (req, res) => {
-  const login = req.body.login
-  const password = req.body.password
+  const login = req.body.login;
+  const password = req.body.password;
 
   if (regEmail.test(login) === true) {
     try {
       async function loginFunction(login, password) {
-        const foundUserHashedPass = await db.attemptLogin(false, login, password)
-        return foundUserHashedPass
+        const foundUserHashedPass = await db.attemptLogin(
+          false,
+          login,
+          password,
+        );
+        return foundUserHashedPass;
       }
 
-      const hashedPass = await loginFunction(login, password)
+      const hashedPass = await loginFunction(login, password);
 
-      bcrypt.compare(password, hashedPass, async function(err, bcryptRes) {
+      bcrypt.compare(password, hashedPass, async function (err, bcryptRes) {
         if (err) {
-          console.log('Password comparison went wrong: ', err);
-          delete req.session
-          res.redirect('/login')
+          console.log("Password comparison went wrong: ", err);
+          delete req.session;
+          res.redirect("/login");
         }
         if (bcryptRes) {
-          console.log('Passwords match');
-          const userId = await db.getIdByEmail(login)
-          req.session.user = { id: userId } 
-          res.redirect('/main_page') // main chat view
+          console.log("Passwords match");
+          const userId = await db.getIdByEmail(login);
+          req.session.user = { id: userId };
+          res.redirect("/main_page"); // main chat view
+        } else {
+          console.log("Passwords do not match");
+          delete req.session;
+          res.redirect("/login");
         }
-        else {
-          console.log('Passwords do not match');
-          delete req.session
-          res.redirect('/login')
-        }
-      })
-    }
-    catch (err) {
+      });
+    } catch (err) {
       console.log(err);
     }
-  }
-  else if (regEmail.test(login) === false) {
+  } else if (regEmail.test(login) === false) {
     try {
       async function loginFunction(login, password) {
-        const foundUserHashedPass = await db.attemptLogin(login, false, password)
-        return foundUserHashedPass
+        const foundUserHashedPass = await db.attemptLogin(
+          login,
+          false,
+          password,
+        );
+        return foundUserHashedPass;
       }
 
-      const hashedPass = await loginFunction(login, password)
+      const hashedPass = await loginFunction(login, password);
 
-      bcrypt.compare(password, hashedPass, async function(err, bcryptRes) {
+      bcrypt.compare(password, hashedPass, async function (err, bcryptRes) {
         if (err) {
-          console.log('Password comparison went wrong: ', err);
-          delete req.session
-          res.redirect('/login')
+          console.log("Password comparison went wrong: ", err);
+          delete req.session;
+          res.redirect("/login");
         }
         if (bcryptRes) {
-          console.log('Passwords match');
-          const userId = await db.getIdByUsername(login)
-          req.session.user = { id: userId } 
-          res.redirect('/main_page') // main chat view
+          console.log("Passwords match");
+          const userId = await db.getIdByUsername(login);
+          req.session.user = { id: userId };
+          res.redirect("/main_page"); // main chat view
+        } else {
+          console.log("Passwords do not match");
+          delete req.session;
+          res.redirect("/login");
         }
-        else {
-          console.log('Passwords do not match');
-          delete req.session
-          res.redirect('/login')
-        }
-      })
-    }
-    catch (err) {
+      });
+    } catch (err) {
       console.log(err);
     }
   }
-})
+});
 
 server.listen(port, host, (req, res) => {
   console.log(`Server running at http://${host}:${port}`);
