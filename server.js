@@ -229,6 +229,7 @@ app.post("/create_server", async (req, res) => {
     
     const data = {
       name: req.body.server_name,
+      short_name: req.body.short_name,
       server_pfp: req.body.server_pfp,
       private: isPrivate,
       server_link: serverLink,
