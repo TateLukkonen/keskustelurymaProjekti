@@ -20,9 +20,22 @@
                 <a href="/home">HOME ICON</a>
             </div>
 
+            <% if (!joined) { %>
+                <form method="POST" action="/join_server">
+                    <input type="hidden" name="server_id" value="<%= channelId %>">
+                    <button>Join Server</button>
+                </form>
+          
+                <p>You must join to send messages.</p>
+          
+            <% } else { %>
+                <p>You are a member ✔</p>
+            <% } %>
+
             <div class="directory"> <!-- example: | home > servers > Server Name > Channel Name |, its all <a> elements, might need to be an ejs file-->
                 <p>| <a href="/home">home</a> > Server Name > Channel Name |</p>
             </div>
+            
 
             <div class="profile-settings">
                 <%- include('small_profile', { user: { icon: sessionUser.avatar_url, name: sessionUser.display_name, status: sessionUser.status }}) %>

@@ -177,10 +177,15 @@ app.get("/channel/:id", isLoggedIn, async (req, res) => {
     const channelMessages = await db.getChannelMessages(channelId);
     const sessionUser = await db.getCurrentSessionUser(req.session.user.id);
 
+    const userId = req.session.user.id;
+
+    const joined = await db.isMember(channelId, userId);
+
     res.render("channel", {
       channelMessages,
       sessionUser: sessionUser[0],
       channelId,
+      joined,
       path: req.path,
     });
   } catch (err) {
@@ -198,14 +203,30 @@ io.on("connection", (socket) => {
   });
 
   socket.on("chat message", async (msg) => {
-    const msgId = await db.setChannelMessages(msg);
-    const msgInfo = await db.getChannelMessage(msgId.message_id);
-    io.emit("chat message", msgInfo[0]);
+    try {
+      const isMember = await db.isMember(msg.serverId, msg.userId);
+
+      if (!isMember) return;
+
+      const msgId = await db.setChannelMessages(msg);
+      const msgInfo = await db.getChannelMessage(msgId.message_id);
+
+      io.to(`server_${msg.serverId}`).emit("chat message", msgInfo[0]);
+    } catch (err) {
+      console.error("Socket message error:", err);
+    }
   });
 
   socket.on("delete message", async (message_id) => {
     await db.deleteMessage(message_id);
     io.emit("delete message", message_id);
+  });
+});
+
+io.on("connection", (socket) => {
+  socket.on("join_server_room", (serverId) => {
+    socket.join(`server_${serverId}`);
+    console.log("joined room:", serverId);
   });
 });
 
@@ -241,6 +262,20 @@ app.post("/create_server", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send("Error creating server");
+  }
+});
+
+app.post("/join_server", isLoggedIn, async (req, res) => {
+  try {
+    const serverId = req.body.server_id;
+    const userId = req.session.user.id;
+
+    await db.joinServer(serverId, userId);
+
+    res.redirect(`/channel/${serverId}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Failed to join server");
   }
 });
 
