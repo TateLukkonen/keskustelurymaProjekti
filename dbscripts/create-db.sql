@@ -28,72 +28,7 @@ CREATE TABLE users (
 	status ENUM('online', 'offline', 'incognito') NOT NULL,
 	avatar_url VARCHAR(255) NOT NULL,
 	bio TEXT NOT NULL,
-<<<<<<< HEAD
-	reputation INT NOT NULL
-=======
-	last_seen_dm_id INT,
-	last_seen_channel_id INT
-
-) ENGINE=InnoDB;
-
-DROP TABLE IF EXISTS user_relationship;
-CREATE TABLE user_relationship (
-    relationship_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_1 INT NOT NULL,
-    user_2 INT NOT NULL,
-    status ENUM('pending', 'accepted', 'blocked') NOT NULL,
-    requester_id INT NOT NULL,
-    friends_since DATETIME NULL,
-
-    UNIQUE (user_1, user_2),
-
-    FOREIGN KEY (user_1)
-        REFERENCES users (user_id)
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (user_2)
-        REFERENCES users (user_id)
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (requester_id)
-        REFERENCES users (user_id)
-        ON DELETE CASCADE
-) ENGINE=InnoDB;
-
-DROP TABLE IF EXISTS  dms;
-CREATE TABLE dms (
-	dm_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-	user_1 INT NOT NULL,
-	user_2 INT NOT NULL,
-	creation_date DATETIME NOT NULL,
-
-    UNIQUE (user_1, user_2),
-	
-	FOREIGN KEY (user_1)
-	REFERENCES users (user_id)
-    ON DELETE CASCADE,
-	
-	FOREIGN KEY (user_2)
-	REFERENCES users (user_id)
-    ON DELETE CASCADE
-) ENGINE=InnoDB;
-
-DROP TABLE IF EXISTS dm_messages;
-CREATE TABLE dm_messages (
-	message_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-	dm_id INT NOT NULL,
-	user_id INT NULL,
-	message MEDIUMTEXT NOT NULL,
-	creation_date DATETIME NOT NULL,
-	
-	FOREIGN KEY (dm_id)
-	REFERENCES dms (dm_id)
-    ON DELETE CASCADE,
-	
-	FOREIGN KEY (user_id)
-	REFERENCES users (user_id)
-    ON DELETE SET NULL
->>>>>>> d09884543fbf8ff395af493d1c3a754ed67c18f6
+	reputation INT NOT NULL DEFAULT 0
 ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS ban_list;
