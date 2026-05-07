@@ -91,8 +91,8 @@ app.get("/servers", isLoggedIn, async (req, res) => {
   }
 });
 
-app.get("/Post", isLoggedIn, (req, res) => {
-  res.render("Post", { path: req.path });
+app.get("/posts", isLoggedIn, (req, res) => {
+  res.render("posts", { path: req.path });
 });
 app.get("/register", (req, res) => {
   res.render("register");
