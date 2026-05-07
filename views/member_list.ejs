@@ -3,11 +3,11 @@
         <a href="#">
             <div class="member">
                 <div class="img-wrap">
-                    <img class="pfp <%= m.status %>" src="<%= m.pfp %>" alt="<%= m.name %>'s profile picture">
+                    <img class="pfp <%= m.status %>" src="<%= m.avatar_url %>" alt="<%= m.name %>'s profile picture">
                 </div>
                 <div class="info">
                     <div class="name"><%= m.name %></div>
-                    <div class="bio"><%= m.bio.slice(0, 20) + '...' %></div>
+                    <div class="bio"><%= m.bio.length > 17 ? m.bio.slice(0, 17) + '...' : m.bio %></div>
                 </div>
             </div>
         </a>

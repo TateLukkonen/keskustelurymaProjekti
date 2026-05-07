@@ -143,8 +143,8 @@ app.get("/home", isLoggedIn, async (req, res) => {
     });
 
     const sessionUser = await db.getCurrentSessionUser(req.session.user.id);
-    console.log("sessionUser:", sessionUser);
     const serversList = await db.getServers();
+
 
     res.render("home", {
       user: sessionUser[0],
@@ -182,6 +182,8 @@ app.get("/server/:id", isLoggedIn, async (req, res) => {
     const channelMessages = await db.getChannelMessages(serverId); // gotta change to posts on db level
     const sessionUser = await db.getCurrentSessionUser(userId);
     const joinedServers = await db.getJoinedServers(userId)
+    const memberList = await db.getMemberList(serverId)
+    const posts = await db.getPosts(serverId)
 
     const joined = await db.isMember(serverId, userId);
 
@@ -191,6 +193,8 @@ app.get("/server/:id", isLoggedIn, async (req, res) => {
       serverId,
       joined,
       joinedServers,
+      memberList,
+      posts,
       path: req.path,
     });
   } catch (err) {
@@ -207,7 +211,7 @@ io.on("connection", (socket) => {
     console.log("user disconnected");
   });
 
-  socket.on("chat message", async (msg) => {
+  socket.on("chat message", async (msg) => { //outdated
     try {
       const isMember = await db.isMember(msg.serverId, msg.userId);
 
@@ -222,17 +226,34 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("delete message", async (message_id) => {
+  socket.on("delete message", async (message_id) => { //outdated
     await db.deleteMessage(message_id);
     io.emit("delete message", message_id);
   });
-});
 
-io.on("connection", (socket) => {
   socket.on("join_server_room", (serverId) => {
     socket.join(`server_${serverId}`);
     console.log("joined room:", serverId);
   });
+
+  socket.on('upvote', async (post_id, server_id) => {
+      try {
+          await db.upvotePost(post_id)
+          io.to(`server_${server_id}`).emit('post upvote', post_id)
+      } catch (err) {
+          console.error('Socket upvote error:', err)
+      }
+  })
+
+  socket.on('downvote', async (post_id, server_id) => {
+      try {
+          await db.downvotePost(post_id)
+          io.to(`server_${server_id}`).emit('post downvote', post_id)
+      } catch (err) {
+          console.error('Socket downvote error:', err)
+      }
+  })
+
 });
 
 // POST METHODS
@@ -244,7 +265,7 @@ app.post("/join_server", isLoggedIn, async (req, res) => {
 
     await db.joinServer(serverId, userId);
 
-    res.redirect(`/channel/${serverId}`);
+    res.redirect(`/server/${serverId}`);
   } catch (err) {
     console.error(err);
     res.status(500).send("Failed to join server");

@@ -134,8 +134,14 @@ export async function getServers() {
     server.invite_link,
     server.server_link,
     server.creation_date,
+    server.server_picture_url,
     users.user_id AS owner_id,
-    users.username AS owner_username
+    users.username AS owner_username,
+    (
+      SELECT COUNT(*) 
+      FROM member_list
+      WHERE member_list.server_id = server.server_id
+    ) AS member_count
     FROM server
     JOIN member_list 
     ON member_list.server_id = server.server_id
@@ -380,6 +386,94 @@ const updateDisplayName = async (new_name, user_id) => {
   connection.release();
 };
 
+const getMemberList = async (server_id) => {
+  const connection = await getConnection();
+
+  const sql = `
+              SELECT member_list.server_id, 
+              member_list.user_id,
+              users.display_name,
+              users.avatar_url,
+              users.status,
+              users.bio
+              FROM member_list
+              JOIN server 
+              ON server.server_id = member_list.server_id
+              JOIN users 
+              ON users.user_id = member_list.user_id
+
+              WHERE server.server_id = ?
+              `
+  const [rows] = await connection.execute(sql, [server_id]);
+  connection.release();
+
+  return rows
+};
+
+const countMembers = async (server_id) => {
+  const connection = await getConnection()
+
+  const sql = `
+              SELECT COUNT(*) 
+              FROM member_list
+              JOIN server ON server.server_id = member_list.server_id
+              WHERE server.server_id = ?;
+              `
+
+  const count = await connection.execute(sql, [server_id])
+  connection.release()
+
+  return count
+}
+
+const upvotePost = async (post_id) => {
+  const connection = await getConnection();
+
+  const sql = `UPDATE posts 
+              SET upvotes = upvotes + 1 
+              WHERE post_id = ?
+              `
+  await connection.execute(sql, [post_id]);
+  connection.release();
+};
+
+const downvotePost = async (post_id) => {
+  const connection = await getConnection();
+
+  const sql = `UPDATE posts 
+              SET downvotes = downvotes + 1 
+              WHERE post_id = ?
+              `
+  await connection.execute(sql, [post_id]);
+  connection.release();
+};
+
+const getPosts = async (server_id) => {
+  const connection = await getConnection();
+
+  const sql = `
+              SELECT posts.post_id,
+              posts.title,
+              posts.text_content,
+              users.display_name,
+              users.avatar_url,
+              posts.img,
+              posts.creation_date,
+              posts.upvotes,
+              posts.downvotes
+
+              FROM posts
+              JOIN users
+              ON users.user_id = posts.user_id
+
+              WHERE posts.server_id = ?
+              `
+  const [rows] = await connection.execute(sql, [server_id]);
+  connection.release();
+
+  return rows
+};
+
 export default {
   getChannelMessages,
   getChannelMessage,
@@ -396,5 +490,10 @@ export default {
   isMember,
   getServerById,
   getJoinedServers,
-  updateDisplayName
+  updateDisplayName,
+  getMemberList,
+  countMembers,
+  upvotePost,
+  downvotePost,
+  getPosts,
 };

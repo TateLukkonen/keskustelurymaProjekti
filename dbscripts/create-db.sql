@@ -118,7 +118,7 @@ CREATE TABLE posts (
 
 DROP TABLE IF EXISTS post_comments;
 CREATE TABLE post_comments(
-    comment_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    comment_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     post_id INT NOT NULL,
     user_id INT NOT NULL,
     text_content TEXT NOT NULL,
@@ -133,4 +133,20 @@ CREATE TABLE post_comments(
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+DROP TABLE IF EXISTS post_votes;
+CREATE TABLE post_votes (
+    vote_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    post_id INT NOT NULL,
+    user_id INT NOT NULL,
+    vote ENUM('upvote', 'downvote') NOT NULL,
 
+    FOREIGN KEY (post_id) 
+	REFERENCES posts (post_id) 
+	ON DELETE CASCADE,
+
+    FOREIGN KEY (user_id) 
+	REFERENCES users (user_id) 
+	ON DELETE CASCADE,
+
+    UNIQUE (post_id, user_id)
+) ENGINE=InnoDB;
