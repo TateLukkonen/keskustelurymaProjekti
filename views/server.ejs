@@ -11,10 +11,6 @@
     <link rel="stylesheet" href="/styles/posts.css">
     <link rel="stylesheet" href="/styles/basic.css">
     <link rel="stylesheet" href="/styles/channel.css">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@200..1000&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -31,40 +27,34 @@
                         <input type="hidden" name="server_id" value="<%= serverId %>">
                         <button>Join Server</button>
                     </form>
-
                     <p>You must join to post.</p>
                     <% } else { %>
                         <p>You are a member ✔</p>
                         <% } %>
 
                             <div class="directory">
-                                <p>| <a href="/home">home</a> > <%= serverName || "Server Name" %> > Posts |</p>
+                                <p>| <a href="/home">home</a> &gt; <%= serverName || "Server" %> &gt; Posts |</p>
                             </div>
 
                             <div class="profile-settings">
                                 <%- include("small_profile", { user: { icon: sessionUser.avatar_url, name:
                                     sessionUser.display_name, status: sessionUser.status } }) %>
-
                                     <a href="/user_settings">SETTINGS ICON</a>
                             </div>
             </div>
 
             <div class="bottom-section">
-                <%- include("server_list", { data: [ { name: "SERVER" }, { name: "SLIME" }, { name: "TERRA" }, {
-                    name: "VELCHAT" }, { name: "LUNYX" } ] }) %>
+                <%- include("server_list", { data: joinedServers || [] }) %>
 
                     <section class="posts-area">
-
                         <section class="posts">
                             <% posts.forEach(post=> { %>
                                 <article class="post">
-
                                     <div class="post-top">
                                         <div>
                                             <h2>
                                                 <%= post.title %>
                                             </h2>
-
                                             <p>
                                                 <%= post.text_content || "" %>
                                             </p>
@@ -74,7 +64,6 @@
                                             <span>
                                                 <%= post.display_name || post.username %>
                                             </span>
-
                                             <img class="avatar"
                                                 src="<%= post.avatar_url || '/uploads/default_icon.png' %>" alt="">
                                         </div>
@@ -84,22 +73,9 @@
                                         <img class="post-image" src="<%= post.img %>" alt="Post image">
                                         <% } %>
 
-                                            <div class="actions">
-                                                <form method="post" action="/posts/<%= post.post_id %>/upvote"
-                                                    class="inline">
-                                                    <button class="vote up">▲ <%= post.upvotes || 0 %></button>
-                                                </form>
-
-                                                <form method="post" action="/posts/<%= post.post_id %>/downvote"
-                                                    class="inline">
-                                                    <button class="vote down">▼ <%= post.downvotes || 0 %></button>
-                                                </form>
-                                            </div>
-
                                             <div class="comments">
-                                                <% comments .filter(comment=> comment.post_id === post.post_id)
-                                                    .forEach(comment => { %>
-
+                                                <% comments.filter(comment=> comment.post_id ===
+                                                    post.post_id).forEach(comment => { %>
                                                     <div class="comment">
                                                         <p>
                                                             <strong>
@@ -108,7 +84,6 @@
                                                             <%= comment.text_content %>
                                                         </p>
                                                     </div>
-
                                                     <% }) %>
 
                                                         <% if (joined) { %>
@@ -122,30 +97,50 @@
                                                             <% } %>
                                             </div>
 
-        <div class="bottom-section"> <!-- 3 divs -->
-            <%- include('server_list', { data: [{ name: 'SERVER' }, { name: 'SLIME' }, { name: 'TERRA' }, { name: 'VELCHAT' }, { name: 'LUNYX' }] }) %> <!-- server/dm list, def an ejs -->
+                                            <div class="actions">
+                                                <form method="post" action="/posts/<%= post.post_id %>/upvote"
+                                                    class="inline">
+                                                    <button class="vote up">▲ <%= post.upvotes || 0 %></button>
+                                                </form>
 
-             <%- include('posts', {
-    posts: [
-        {
-            title: 'First Post',
-            message: 'Hello world',
-            display_name: 'Mikko',
-            avatar_url: '/uploads/default_icon.png',
-            post_image: '/uploads/default_post.png'
-        },
+                                                <form method="post" action="/posts/<%= post.post_id %>/downvote"
+                                                    class="inline">
+                                                    <button class="vote down">▼ <%= post.downvotes || 0 %></button>
+                                                </form>
+                                            </div>
+                                </article>
+                                <% }) %>
+                        </section>
 
-        {
-            title: 'Second Post',
-            message: 'Another message',
-            display_name: 'Anna',
-            avatar_url: '/uploads/default_icon.png',
-            post_image: ''
-        }
-    ]
-}) %>
+                        <% if (posts.length===0) { %>
+                            <p class="empty">No posts yet.</p>
+                            <% } %>
 
-            <%- include('member_list', { data: [{ user_id: 1, name: 'MEMBER', pfp: '/uploads/default_icon.png', status: 'online', bio: 'this is my bio description'}]}) %> <!-- shows all members in the channel, probs ejs  -->
+                                <% if (joined) { %>
+                                    <button class="create-post-btn" onclick="openPostModal()">+</button>
+
+                                    <div class="post-modal" id="postModal">
+                                        <div class="post-modal-box">
+                                            <button class="close-modal" onclick="closePostModal()">×</button>
+
+                                            <h2>Create Post</h2>
+
+                                            <form method="post" action="/servers/<%= serverId %>/posts"
+                                                enctype="multipart/form-data">
+                                                <input name="title" placeholder="Post title" required>
+                                                <textarea name="text_content" placeholder="Write something..."
+                                                    required></textarea>
+                                                <input type="file" name="img"
+                                                    accept="image/png,image/jpeg,image/webp,image/gif">
+                                                <button type="submit" class="submit-post-btn">Post</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    <% } %>
+                    </section>
+
+                    <%- include("member_list", { data: members || [] }) %>
+            </div>
         </div>
 
         <script>
@@ -157,7 +152,7 @@
                 document.getElementById("postModal").style.display = "none";
             }
 
-            window.addEventListener("click", (e) => {
+            window.addEventListener("click", function (e) {
                 const modal = document.getElementById("postModal");
 
                 if (e.target === modal) {
@@ -166,4 +161,5 @@
             });
         </script>
 </body>
+
 </html>
