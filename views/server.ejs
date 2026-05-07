@@ -46,7 +46,7 @@
         </div> 
 
         <div class="bottom-section"> <!-- 3 divs -->
-            <%- include('server_list', { data: [{ name: 'SERVER' }, { name: 'SLIME' }, { name: 'TERRA' }, { name: 'VELCHAT' }, { name: 'LUNYX' }] }) %> <!-- server/dm list, def an ejs -->
+            <%- include('server_list', { data: joinedServers }) %> <!-- server/dm list, def an ejs -->
 
              <%- include('posts', {
     posts: [

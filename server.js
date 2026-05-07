@@ -181,10 +181,11 @@ app.get("/server/:id", isLoggedIn, async (req, res) => {
       return res.status(400).send("Server ID missing");
     }
 
-    const channelMessages = await db.getChannelMessages(serverId); // gotta change to posts on db level
-    const sessionUser = await db.getCurrentSessionUser(req.session.user.id);
-
     const userId = req.session.user.id;
+
+    const channelMessages = await db.getChannelMessages(serverId); // gotta change to posts on db level
+    const sessionUser = await db.getCurrentSessionUser(userId);
+    const joinedServers = await db.getJoinedServers(userId)
 
     const joined = await db.isMember(serverId, userId);
 
@@ -193,6 +194,7 @@ app.get("/server/:id", isLoggedIn, async (req, res) => {
       sessionUser: sessionUser[0],
       serverId,
       joined,
+      joinedServers,
       path: req.path,
     });
   } catch (err) {

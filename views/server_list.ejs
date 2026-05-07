@@ -1,11 +1,11 @@
 <div class="list">
-    <% for (convo of data) { %>
-        <a href="#">
+    <% for (server of data) { %>
+        <a href="/server/<%= server.server_id %>">
             <div class="convo">
-                    <img src="/uploads/default_icon.png" alt="<%= convo.name %>">
+                    <img src="<%= server.server_picture_url || '/uploads/default_icon.png' %>" alt="<%= server.name %>">
                 <div class="name">
                     <p>
-                        <%= convo.name %>
+                        <%= server.short_name %>
                     </p>
                 </div>
             </div>

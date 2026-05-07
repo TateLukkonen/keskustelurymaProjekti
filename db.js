@@ -345,6 +345,30 @@ const getServerById = async (server_id) => {
   return rows[0];
 };
 
+const getJoinedServers = async (user_id) => {
+  const connection = await getConnection();
+
+  const sql = `
+              SELECT member_list.server_id, 
+              member_list.user_id,
+              server.name,
+              server.short_name,
+              server.server_picture_url
+              FROM member_list
+              JOIN server 
+              ON server.server_id = member_list.server_id
+              JOIN users 
+              ON users.user_id = member_list.user_id
+
+              WHERE users.user_id = ?
+              `;
+
+  const [rows] = await connection.execute(sql, [user_id]);
+  connection.release();
+
+  return rows;
+};
+
 export default {
   getChannelMessages,
   getChannelMessage,
@@ -360,4 +384,5 @@ export default {
   joinServer,
   isMember,
   getServerById,
+  getJoinedServers,
 };
