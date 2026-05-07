@@ -22,7 +22,7 @@
 
             <% if (!joined) { %>
                 <form method="POST" action="/join_server">
-                    <input type="hidden" name="server_id" value="<%= channelId %>">
+                    <input type="hidden" name="server_id" value="<%= serverId %>">
                     <button>Join Server</button>
                 </form>
           
@@ -47,7 +47,7 @@
         <div class="bottom-section"> <!-- 3 divs -->
             <%- include('server_list', { data: [{ name: 'SERVER' }, { name: 'SLIME' }, { name: 'TERRA' }, { name: 'VELCHAT' }, { name: 'LUNYX' }] }) %> <!-- server/dm list, def an ejs -->
 
-            <div class="posts">posts.ejs will be here</div> <!-- chat, should use the ejs file, so rework that -->
+            <%- include('posts') %> <!-- chat, should use the ejs file, so rework that -->
 
             <%- include('member_list', { data: [{ user_id: 1, name: 'MEMBER', pfp: '/uploads/default_icon.png', status: 'online', bio: 'this is my bio description'}]}) %> <!-- shows all members in the channel, probs ejs  -->
         </div>

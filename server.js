@@ -179,11 +179,7 @@ app.get("/server/:id", isLoggedIn, async (req, res) => {
 
     const userId = req.session.user.id;
 
-    const joined = await db.isMember(channelId, userId);
-
-    const userId = req.session.user.id;
-
-    const joined = await db.isMember(channelId, userId);
+    const joined = await db.isMember(serverId, userId);
 
     res.render("server", {
       channelMessages, // change to posts after
