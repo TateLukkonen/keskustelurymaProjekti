@@ -322,6 +322,28 @@ const isMember = async (server_id, user_id) => {
   return rows.length > 0;
 };
 
+const getServerById = async (server_id) => {
+  const connection = await getConnection();
+
+  const sql = `
+    SELECT 
+      server.server_id,
+      server.name,
+      server.short_name,
+      server.private,
+      server.invite_link,
+      server.server_link
+    FROM server
+    WHERE server.server_id = ?
+    LIMIT 1
+  `;
+
+  const [rows] = await connection.execute(sql, [server_id]);
+  connection.release();
+
+  return rows[0];
+};
+
 export default {
   getChannelMessages,
   getChannelMessage,
@@ -336,4 +358,5 @@ export default {
   registerAccount,
   joinServer,
   isMember,
+  getServerById,
 };
