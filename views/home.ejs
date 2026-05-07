@@ -3,21 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <title>Home</title>
+
     <link rel="stylesheet" href="/styles/home.css">
     <link rel="stylesheet" href="/styles/basic.css">
 </head>
+
 <body>
+
     <%- include('header') %>
 
     <div class="container">
 
-        
         <section class="top-section">
-         
+
             <div class="left-info">
                 <h2><%= user.username %></h2>
 
-                <p class="display-name">Display name: <%= user.display_name %></p>
+                <p class="display-name">
+                    Display name: <%= user.display_name %>
+                </p>
 
                 <form action="/update-profile" method="POST" class="edit-form">
                     <input type="text" name="displayName" placeholder="Edit display name">
@@ -29,27 +33,31 @@
                     <span class="<%= user.status %>"></span>
                 </div>
             </div>
-        
+
             <div class="profile-center">
+
                 <h2><%= user.username %></h2>
 
                 <div class="profile-pic">
                     <img src="<%= user.avatar_url || '/uploads/default_icon.png' %>" alt="PFP">
                 </div>
+
             </div>
 
-            
             <div class="bio">
                 <h3>Bio</h3>
                 <p><%= user.bio || "No bio yet..." %></p>
             </div>
 
         </section>
-        
-        
 
-        
         <section class="bottom-section">
+
+            <div class="create-server">
+                <a href="/create_server_settings" class="create-server-btn">
+                    + Create Server
+                </a>
+            </div>
 
             <div class="server-toggle">
                 <button onclick="showPublic()">Public server</button>
@@ -58,7 +66,9 @@
 
             <div class="servers">
                 <% servers.forEach(server => { %>
-                    <%- include('server_card', { server }) %>
+                    <div class="server-card <%= server.is_private ? 'private' : 'public' %>">
+                        <%- include('server_card', { server }) %>
+                    </div>
                 <% }) %>
             </div>
 
