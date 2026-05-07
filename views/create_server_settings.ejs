@@ -1,30 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Create Server</title>
+
+    <link rel="stylesheet" href="/styles/basic.css">
+    <link rel="stylesheet" href="/styles/create_server.css">
 </head>
+
 <body>
     <form action="/create_server" id="serverForm" method="POST" enctype="multipart/form-data">
         <input type="text" name="server_name" placeholder="Server name" required>
-        <input type="text" name="short_name" placeholder="Display name" rquired>
+        <input type="text" name="short_name" placeholder="Display name" required>
+
         <div class="pfp-group">
             <label>PICTURE (Max 512KB)</label>
+
             <div class="image-frame">
-                <img id="preview" src="#" alt="Preview" />
+                <img id="preview" alt="Preview">
                 <span id="placeholder">No Image</span>
             </div>
-            <input
-                type="file"
-                id="pfp_input"
-                name="pfp"
-                accept="image/*"
-            />
+
+            <input type="file" id="pfp_input" name="pfp" accept="image/*">
         </div>
-        <input type="radio" name="pub_priv" value="public_choice"> Public
-        <input type="radio" name="pub_priv" value="private_choice"> Private
+
+        <div class="radio-group">
+            <input type="radio" id="public" name="pub_priv" value="public_choice" checked>
+            <label for="public">Public</label>
+
+            <input type="radio" id="private" name="pub_priv" value="private_choice">
+            <label for="private">Private</label>
+        </div>
+
         <button type="submit">Create Server</button>
     </form>
+
+    <script>
+        const input = document.getElementById("pfp_input");
+        const preview = document.getElementById("preview");
+        const placeholder = document.getElementById("placeholder");
+
+        input.addEventListener("change", function () {
+            const file = this.files[0];
+
+            if (!file) {
+                preview.removeAttribute("src");
+                preview.style.display = "none";
+                placeholder.style.display = "block";
+                return;
+            }
+
+            preview.src = URL.createObjectURL(file);
+            preview.style.display = "block";
+            placeholder.style.display = "none";
+        });
+    </script>
 </body>
+
 </html>

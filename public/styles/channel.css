@@ -2,50 +2,74 @@
     height: 100%;
 }
 
-/* TOP SECTION */
-
 .top-section {
     height: 10%;
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 160px 1fr 240px;
     align-items: center;
+    padding: 18px 0;
 }
 
-.top-left,
-.directory,
-.profile-settings {
-    width: 30%;
+.top-left {
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
 }
 
-.directory {
-    text-align: center;
+.server-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.server-title-top {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #8E44AD;
+    letter-spacing: 1px;
+}
+
+.server-status p {
+    margin: 0;
+    color: #FDFEFE;
+    font-size: 15px;
+    font-weight: 600;
 }
 
 .profile-settings {
     display: flex;
-    flex-flow: row nowrap;
+    align-items: center;
     justify-content: flex-end;
+    width: 240px;
+    padding-right: 12px;
 }
-
-/* SMALL PROFILE */
 
 .small-profile {
+    width: 220px;
     display: flex;
-    flex-flow: row nowrap;
-    border: 2px solid #1c2732;
-    padding: 8px;
-    padding-right: 16px;
-    border-radius: 8px;
-    margin: 4px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 10px;
     background-color: #283848;
+    border: 2px solid #1c2732;
+    border-radius: 10px;
+}
+
+.profile-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .small-profile .pfp,
 .small-profile .pfp img {
-    width: 40px;
-    height: 40px;
-    border-radius: 4px;
+    width: 42px;
+    height: 42px;
+    border-radius: 6px;
 }
 
 .small-profile.online .pfp img {
@@ -63,15 +87,17 @@
     outline-offset: 2px;
 }
 
-.small-profile .pfp {
-    margin: 2px;
-    margin-right: 8px;
-}
-
 .name-status {
     display: flex;
-    flex-flow: column nowrap;
-    justify-content: space-around;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+}
+
+.small-profile .name {
+    color: white;
+    font-weight: 700;
+    font-size: 14px;
 }
 
 .small-profile .status {
@@ -90,7 +116,25 @@
     color: gray;
 }
 
-/* BOTTOM SECTION */
+.settings-btn {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background: #34495e;
+    color: white;
+    font-size: 22px;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.settings-btn:hover {
+    background: #3d566e;
+    transform: rotate(25deg);
+}
 
 .bottom-section {
     display: grid;
@@ -98,8 +142,6 @@
     width: 100%;
     min-height: calc(100vh - 90px);
 }
-
-/* SERVER LIST */
 
 .list {
     width: 160px;
@@ -158,28 +200,32 @@
     background-color: #283848;
 }
 
-/* POSTS AREA */
-
 .posts-area {
     grid-column: 2;
     width: 100%;
     max-width: 720px;
     margin: 40px auto;
-    padding: 0;
+    padding: 0 16px;
 }
-
-/* MEMBER LIST */
 
 .member-list {
     grid-column: 3;
     width: 240px;
     min-width: 240px;
     background-color: #283848;
-    padding: 20px 14px;
+    padding: 20px 12px;
     overflow-y: auto;
 }
 
+.member-list-title {
+    margin: 0 0 18px 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+}
+
 .member-list a {
+    display: block;
     color: white;
     text-decoration: none;
 }
@@ -188,6 +234,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    width: 100%;
     padding: 8px;
     border-radius: 8px;
     margin-bottom: 8px;
@@ -203,14 +250,17 @@
     flex-shrink: 0;
 }
 
+.img-wrap img,
 .member .pfp {
     width: 42px;
     height: 42px;
+    display: block;
     border-radius: 50%;
     object-fit: cover;
 }
 
 .member .info {
+    flex: 1;
     min-width: 0;
 }
 
@@ -227,30 +277,104 @@
     text-overflow: ellipsis;
 }
 
-/* FLOATING BUTTON */
-
 .create-post-btn {
     position: fixed;
     right: 270px;
     bottom: 30px;
-
     width: 60px;
     height: 60px;
-
     border-radius: 50%;
     border: 0;
-
     background: #8e44ad;
     color: white;
-
     font-size: 38px;
     cursor: pointer;
-
     box-shadow: 0 0 20px rgba(0,0,0,.3);
-
     z-index: 100;
 }
 
 .create-post-btn:hover {
     background: #9b59b6;
+}
+
+@media (max-width: 1100px) {
+    .top-section {
+        grid-template-columns: 130px 1fr 210px;
+    }
+
+    .bottom-section {
+        grid-template-columns: 130px 1fr 210px;
+    }
+
+    .list {
+        width: 130px;
+        min-width: 130px;
+    }
+
+    .member-list {
+        width: 210px;
+        min-width: 210px;
+    }
+
+    .profile-settings {
+        width: 210px;
+    }
+
+    .small-profile {
+        width: 195px;
+    }
+
+    .create-post-btn {
+        right: 235px;
+    }
+}
+
+@media (max-width: 850px) {
+    .top-section {
+        height: auto;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 14px;
+        text-align: center;
+    }
+
+    .top-left {
+        justify-content: center;
+        padding-left: 0;
+    }
+
+    .profile-settings {
+        width: 100%;
+        justify-content: center;
+        padding-right: 0;
+    }
+
+    .bottom-section {
+        grid-template-columns: 1fr;
+    }
+
+    .list {
+        width: 100%;
+        min-width: 0;
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 8px;
+    }
+
+    .posts-area {
+        grid-column: 1;
+        max-width: 100%;
+        margin: 24px auto;
+    }
+
+    .member-list {
+        grid-column: 1;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .create-post-btn {
+        right: 24px;
+        bottom: 24px;
+    }
 }

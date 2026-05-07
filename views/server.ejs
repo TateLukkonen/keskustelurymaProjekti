@@ -16,134 +16,259 @@
 <body>
     <%- include("header") %>
 
+
         <div class="content">
+
             <div class="top-section">
+
                 <div class="top-left">
                     <a href="/home">HOME ICON</a>
                 </div>
 
-                <% if (!joined) { %>
-                    <form method="post" action="/join_server">
-                        <input type="hidden" name="server_id" value="<%= serverId %>">
-                        <button>Join Server</button>
-                    </form>
-                    <p>You must join to post.</p>
-                    <% } else { %>
-                        <p>You are a member ✔</p>
-                        <% } %>
+                <div class="server-status">
 
-                            <div class="directory">
-                                <p>| <a href="/home">home</a> &gt; <%= serverName || "Server" %> &gt; Posts |</p>
+                    <h2 class="server-title-top">
+                        <%= serverName || "Server" %>
+                    </h2>
+
+                    <% if (!joined) { %>
+
+                        <form method="post" action="/join_server">
+                            <input type="hidden" name="server_id" value="<%= serverId %>">
+
+                            <button>
+                                Join Server
+                            </button>
+                        </form>
+
+                        <p>
+                            You must join to post.
+                        </p>
+
+                        <% } else { %>
+
+                            <p>
+                                You are a member ✔
+                            </p>
+
+                            <% } %>
+
+                </div>
+
+                <div class="profile-settings">
+
+                    <div class="small-profile <%= sessionUser.status %>">
+
+                        <div class="profile-left">
+
+                            <div class="pfp">
+                                <img src="<%= sessionUser.avatar_url || '/uploads/default_icon.png' %>" alt="">
                             </div>
 
-                            <div class="profile-settings">
-                                <%- include("small_profile", { user: { icon: sessionUser.avatar_url, name:
-                                    sessionUser.display_name, status: sessionUser.status } }) %>
-                                    <a href="/user_settings">SETTINGS ICON</a>
+                            <div class="name-status">
+
+                                <span class="name">
+                                    <%= sessionUser.display_name %>
+                                </span>
+
+                                <span class="status">
+                                    <%= sessionUser.status %>
+                                </span>
+
                             </div>
+
+                        </div>
+
+                        <a href="/user_settings" class="settings-btn">
+                            ⚙
+                        </a>
+
+                    </div>
+
+                </div>
+
             </div>
 
             <div class="bottom-section">
+
                 <%- include("server_list", { data: joinedServers || [] }) %>
 
                     <section class="posts-area">
+
                         <section class="posts">
+
                             <% posts.forEach(post=> { %>
+
                                 <article class="post">
+
                                     <div class="post-top">
+
                                         <div>
+
                                             <h2>
                                                 <%= post.title %>
                                             </h2>
+
                                             <p>
                                                 <%= post.text_content || "" %>
                                             </p>
+
                                         </div>
 
                                         <div class="post-user">
+
                                             <span>
                                                 <%= post.display_name || post.username %>
                                             </span>
+
                                             <img class="avatar"
                                                 src="<%= post.avatar_url || '/uploads/default_icon.png' %>" alt="">
+
                                         </div>
+
                                     </div>
 
                                     <% if (post.img) { %>
+
                                         <img class="post-image" src="<%= post.img %>" alt="Post image">
+
                                         <% } %>
 
                                             <div class="comments">
-                                                <% comments.filter(comment=> comment.post_id ===
-                                                    post.post_id).forEach(comment => { %>
+
+                                                <% comments .filter(comment=> comment.post_id === post.post_id)
+                                                    .forEach(comment => { %>
+
                                                     <div class="comment">
+
                                                         <p>
+
                                                             <strong>
                                                                 <%= comment.display_name || comment.username %>:
                                                             </strong>
+
                                                             <%= comment.text_content %>
+
                                                         </p>
+
                                                     </div>
+
                                                     <% }) %>
 
                                                         <% if (joined) { %>
+
                                                             <form method="post"
                                                                 action="/posts/<%= post.post_id %>/comments"
                                                                 class="comment-form">
+
                                                                 <input name="text_content"
                                                                     placeholder="Write a comment..." required>
-                                                                <button>Comment</button>
+
+                                                                <button>
+                                                                    Comment
+                                                                </button>
+
                                                             </form>
+
                                                             <% } %>
+
                                             </div>
 
                                             <div class="actions">
+
                                                 <form method="post" action="/posts/<%= post.post_id %>/upvote"
                                                     class="inline">
-                                                    <button class="vote up">▲ <%= post.upvotes || 0 %></button>
+
+                                                    <button class="vote up">
+                                                        ▲ <%= post.upvotes || 0 %>
+                                                    </button>
+
                                                 </form>
 
                                                 <form method="post" action="/posts/<%= post.post_id %>/downvote"
                                                     class="inline">
-                                                    <button class="vote down">▼ <%= post.downvotes || 0 %></button>
+
+                                                    <button class="vote down">
+                                                        ▼ <%= post.downvotes || 0 %>
+                                                    </button>
+
                                                 </form>
+
                                             </div>
+
                                 </article>
+
                                 <% }) %>
+
                         </section>
 
                         <% if (posts.length===0) { %>
-                            <p class="empty">No posts yet.</p>
+
+                            <p class="empty">
+                                No posts yet.
+                            </p>
+
                             <% } %>
 
                                 <% if (joined) { %>
-                                    <button class="create-post-btn" onclick="openPostModal()">+</button>
+
+                                    <button class="create-post-btn" onclick="openPostModal()">
+                                        +
+                                    </button>
 
                                     <div class="post-modal" id="postModal">
-                                        <div class="post-modal-box">
-                                            <button class="close-modal" onclick="closePostModal()">×</button>
 
-                                            <h2>Create Post</h2>
+                                        <div class="post-modal-box">
+
+                                            <button class="close-modal" onclick="closePostModal()">
+                                                ×
+                                            </button>
+
+                                            <h2>
+                                                Create Post
+                                            </h2>
 
                                             <form method="post" action="/servers/<%= serverId %>/posts"
                                                 enctype="multipart/form-data">
+
                                                 <input name="title" placeholder="Post title" required>
+
                                                 <textarea name="text_content" placeholder="Write something..."
                                                     required></textarea>
+
                                                 <input type="file" name="img"
                                                     accept="image/png,image/jpeg,image/webp,image/gif">
-                                                <button type="submit" class="submit-post-btn">Post</button>
+
+                                                <button type="submit" class="submit-post-btn">
+                                                    Post
+                                                </button>
+
                                             </form>
+
                                         </div>
+
                                     </div>
+
                                     <% } %>
+
                     </section>
 
-                    <%- include("member_list", { data: members || [] }) %>
+                    <div class="member-list">
+
+                        <h3 class="member-list-title">
+                            Member List
+                        </h3>
+
+                        <%- include("member_list", { data: members || [] }) %>
+
+                    </div>
+
             </div>
+
         </div>
 
         <script>
+
             function openPostModal() {
                 document.getElementById("postModal").style.display = "flex";
             }
@@ -153,13 +278,17 @@
             }
 
             window.addEventListener("click", function (e) {
+
                 const modal = document.getElementById("postModal");
 
                 if (e.target === modal) {
                     modal.style.display = "none";
                 }
+
             });
+
         </script>
+
 </body>
 
 </html>

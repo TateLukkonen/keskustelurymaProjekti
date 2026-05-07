@@ -1,15 +1,31 @@
-<div class="member-list">
-    <% for (m of data) { %>
-        <a href="#">
+<div class="member-list-content">
+
+    <% data.forEach(member=> { %>
+
+        <a href="/profile/<%= member.user_id %>">
+
             <div class="member">
+
                 <div class="img-wrap">
-                    <img class="pfp <%= m.status %>" src="<%= m.avatar_url %>" alt="<%= m.name %>'s profile picture">
+                    <img class="pfp" src="<%= member.pfp || '/uploads/default_icon.png' %>" alt="<%= member.name %>">
                 </div>
+
                 <div class="info">
-                    <div class="name"><%= m.name %></div>
-                    <div class="bio"><%= m.bio.length > 17 ? m.bio.slice(0, 17) + '...' : m.bio %></div>
+
+                    <div class="name">
+                        <%= member.name %>
+                    </div>
+
+                    <div class="bio">
+                        <%= member.bio ? member.bio.slice(0, 20) + "..." : "No bio yet" %>
+                    </div>
+
                 </div>
+
             </div>
+
         </a>
-    <% } %>
+
+        <% }) %>
+
 </div>
