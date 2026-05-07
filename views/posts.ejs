@@ -1,0 +1,68 @@
+<!-- views/create_post.ejs -->
+<form
+  class="create-post-container posts"
+  action="/submit-post"
+  method="POST"
+  enctype="multipart/form-data"
+>
+  <!-- Otsikko -->
+  <input
+    type="text"
+    name="title"
+    class="post-input"
+    placeholder="Otsikko tähän..."
+    required
+  />
+
+  <!-- Tekstilaatikko, jonka sisällä kuva näkyy -->
+  <div class="content-box">
+    <textarea
+      name="content"
+      class="post-textarea"
+      placeholder="Kirjoita postaus tähän..."
+    ></textarea>
+    <!-- Esikatselu on piilotettu oletuksena (display: none) -->
+    <img
+      id="image-preview"
+      src="#"
+      alt="Kuvan esikatselu"
+      style="display: none; max-width: 100%; margin-top: 10px"
+    />
+  </div>
+
+  <!-- Alarivi -->
+  <div class="post-actions">
+    <label for="photo-input" class="photo-upload-label">
+      Photos
+      <input
+        type="file"
+        id="photo-input"
+        name="post_image"
+        accept="image/*"
+        onchange="previewImage(event)"
+        style="display: none"
+      />
+    </label>
+
+    <button type="submit" class="post-submit-btn">Post</button>
+  </div>
+</form>
+
+<script>
+  // Funktio kuvan esikatselulle
+  function previewImage(event) {
+    const reader = new FileReader();
+    const preview = document.getElementById("image-preview");
+
+    reader.onload = function () {
+      if (reader.readyState === 2) {
+        preview.src = reader.result;
+        preview.style.display = "block";
+      }
+    };
+
+    if (event.target.files[0]) {
+      reader.readAsDataURL(event.target.files[0]);
+    }
+  }
+</script>
