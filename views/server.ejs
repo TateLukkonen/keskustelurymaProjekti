@@ -122,53 +122,30 @@
                                                             <% } %>
                                             </div>
 
-                                </article>
-                                <% }) %>
-                        </section>
+        <div class="bottom-section"> <!-- 3 divs -->
+            <%- include('server_list', { data: [{ name: 'SERVER' }, { name: 'SLIME' }, { name: 'TERRA' }, { name: 'VELCHAT' }, { name: 'LUNYX' }] }) %> <!-- server/dm list, def an ejs -->
 
-                        <% if (posts.length===0) { %>
-                            <p class="empty">No posts yet.</p>
-                            <% } %>
+             <%- include('posts', {
+    posts: [
+        {
+            title: 'First Post',
+            message: 'Hello world',
+            display_name: 'Mikko',
+            avatar_url: '/uploads/default_icon.png',
+            post_image: '/uploads/default_post.png'
+        },
 
-                                <% if (joined) { %>
-                                    <button class="create-post-btn" onclick="openPostModal()">
-                                        +
-                                    </button>
+        {
+            title: 'Second Post',
+            message: 'Another message',
+            display_name: 'Anna',
+            avatar_url: '/uploads/default_icon.png',
+            post_image: ''
+        }
+    ]
+}) %>
 
-                                    <div class="post-modal" id="postModal">
-                                        <div class="post-modal-box">
-
-                                            <button class="close-modal" onclick="closePostModal()">
-                                                ×
-                                            </button>
-
-                                            <h2>Create Post</h2>
-
-                                            <form method="post" action="/servers/<%= serverId %>/posts"
-                                                enctype="multipart/form-data">
-                                                <input name="title" placeholder="Post title" required>
-
-                                                <textarea name="text_content" placeholder="Write something..."
-                                                    required></textarea>
-
-                                                <input type="file" name="img"
-                                                    accept="image/png,image/jpeg,image/webp,image/gif">
-
-                                                <button type="submit" class="submit-post-btn">
-                                                    Post
-                                                </button>
-                                            </form>
-
-                                        </div>
-                                    </div>
-                                    <% } %>
-
-                    </section>
-
-                    <%- include("member_list", { data: members || [ { user_id: 1, name: "MEMBER" ,
-                        pfp: "/uploads/default_icon.png" , status: "online" , bio: "this is my bio description" } ] })
-                        %>
-            </div>
+            <%- include('member_list', { data: [{ user_id: 1, name: 'MEMBER', pfp: '/uploads/default_icon.png', status: 'online', bio: 'this is my bio description'}]}) %> <!-- shows all members in the channel, probs ejs  -->
         </div>
 
         <script>
@@ -189,5 +166,4 @@
             });
         </script>
 </body>
-
 </html>

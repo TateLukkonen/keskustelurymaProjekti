@@ -130,14 +130,13 @@ app.get("/home", isLoggedIn, async (req, res) => {
   try {
     const sessionUser = await db.getCurrentSessionUser(req.session.user.id);
     const serversList = await db.getServers();
+<<<<<<< HEAD
+=======
+
+>>>>>>> db87b56094e087a98c3d0acfb581a9aff91bf280
 
     res.render("home", {
-      user: {
-        username: sessionUser.username,
-        display_name: sessionUser.display_name,
-        online: sessionUser.status,
-        bio: sessionUser.bio,
-      },
+      user: sessionUser[0],
       servers: serversList,
     });
   } catch (err) {
@@ -162,10 +161,26 @@ app.get("/server/:id", isLoggedIn, async (req, res) => {
       return res.status(404).send("Server not found");
     }
 
+<<<<<<< HEAD
     const sessionUserData = await db.getCurrentSessionUser(userId);
     const sessionUser = Array.isArray(sessionUserData)
       ? sessionUserData[0]
       : sessionUserData;
+=======
+    console.log("Server ID:", serverId);
+
+    if (!serverId) {
+      return res.status(400).send("Server ID missing");
+    }
+
+    const userId = req.session.user.id;
+>>>>>>> db87b56094e087a98c3d0acfb581a9aff91bf280
+
+    const channelMessages = await db.getChannelMessages(serverId); // gotta change to posts on db level
+    const sessionUser = await db.getCurrentSessionUser(userId);
+    const joinedServers = await db.getJoinedServers(userId)
+    const memberList = await db.getMemberList(serverId)
+    const posts = await db.getPosts(serverId)
 
     const joined = await db.isMember(serverId, userId);
 
@@ -232,10 +247,16 @@ app.get("/server/:id", isLoggedIn, async (req, res) => {
       serverName: serverInfo.name,
       serverId,
       joined,
+<<<<<<< HEAD
       posts,
       comments,
       members,
       sessionUser,
+=======
+      joinedServers,
+      memberList,
+      posts,
+>>>>>>> db87b56094e087a98c3d0acfb581a9aff91bf280
       path: req.path,
     });
   } catch (err) {
@@ -244,6 +265,64 @@ app.get("/server/:id", isLoggedIn, async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
+=======
+// Socket.IO events
+
+io.on("connection", (socket) => {
+  console.log("a user connected");
+  socket.on("disconnect", () => {
+    console.log("user disconnected");
+  });
+
+  socket.on("chat message", async (msg) => { //outdated
+    try {
+      const isMember = await db.isMember(msg.serverId, msg.userId);
+
+      if (!isMember) return;
+
+      const msgId = await db.setChannelMessages(msg);
+      const msgInfo = await db.getChannelMessage(msgId.message_id);
+
+      io.to(`server_${msg.serverId}`).emit("chat message", msgInfo[0]);
+    } catch (err) {
+      console.error("Socket message error:", err);
+    }
+  });
+
+  socket.on("delete message", async (message_id) => { //outdated
+    await db.deleteMessage(message_id);
+    io.emit("delete message", message_id);
+  });
+
+  socket.on("join_server_room", (serverId) => {
+    socket.join(`server_${serverId}`);
+    console.log("joined room:", serverId);
+  });
+
+  socket.on('upvote', async (post_id, server_id) => {
+      try {
+          await db.upvotePost(post_id)
+          io.to(`server_${server_id}`).emit('post upvote', post_id)
+      } catch (err) {
+          console.error('Socket upvote error:', err)
+      }
+  })
+
+  socket.on('downvote', async (post_id, server_id) => {
+      try {
+          await db.downvotePost(post_id)
+          io.to(`server_${server_id}`).emit('post downvote', post_id)
+      } catch (err) {
+          console.error('Socket downvote error:', err)
+      }
+  })
+
+});
+
+// POST METHODS
+
+>>>>>>> db87b56094e087a98c3d0acfb581a9aff91bf280
 app.post("/join_server", isLoggedIn, async (req, res) => {
   try {
     const serverId = req.body.server_id;
@@ -258,6 +337,7 @@ app.post("/join_server", isLoggedIn, async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 app.post(
   "/servers/:serverId/posts",
   isLoggedIn,
@@ -265,6 +345,39 @@ app.post(
   async (req, res) => {
     const serverId = req.params.serverId;
     const userId = req.session.user.id;
+=======
+app.post('/update_display_name', isLoggedIn, async (req, res)  => {
+  try {
+    const newName = req.body.display_name
+    const userId = req.session.user.id;
+
+    await db.updateDisplayName(newName, userId);
+
+    res.redirect(`/home`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error changing display name of user: ", userId);
+  }
+})
+
+/*
+app.post('/main_page_send_message', async (req, res) => {
+  const message = req.body.message
+  
+  await db.setChannelMessages(message)
+  
+  res.redirect('/main_page')
+  })
+  
+  app.post('/delete_message', async (req, res) => {
+    const message_id = req.body.message_id
+    
+    await db.deleteMessage(message_id)
+    
+    res.redirect('/main_page')
+    })
+    */
+>>>>>>> db87b56094e087a98c3d0acfb581a9aff91bf280
 
     try {
       const joined = await db.isMember(serverId, userId);

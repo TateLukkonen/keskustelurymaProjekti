@@ -3,83 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <title>Home</title>
+
     <link rel="stylesheet" href="/styles/home.css">
     <link rel="stylesheet" href="/styles/basic.css">
 </head>
+
 <body>
+
     <%- include('header') %>
 
-<div class="container">
+    <div class="container">
 
-   
-    <div class="top-section">
+        <section class="top-section">
 
-        <div class="left-info">
-            <h2><%= user.username %></h2>
-            <p>Display name: <%= user.display_name %></p>
+            <div class="left-info">
+                <h2><%= user.username %></h2>
 
-            <form action="/update-profile" method="POST">
-                <input type="text" name="displayName" placeholder="Edit display name">
+                <p class="display-name">
+                    Display name: <%= user.display_name %>
+                </p>
+
+            <form action="/update_display_name" method="POST">
+                <input type="text" name="display_name" placeholder="Edit display name">
                 <button type="submit">Save changes</button>
             </form>
 
-            <div class="status">
-                <span>Status:</span>
-                <span class="<%= user.status %>">o</span>            
-            </div>
-        </div>
-
-        
-        <div class="profile-pic">
-            <img src="<%= user.pfp || '/uploads/default_icon.png' %>" alt="PFP">
-        </div>
-
-        
-        <div class="bio">
-            <h3>Bio</h3>
-            <p><%= user.bio || "No bio yet..." %></p>
-        </div>
-
-    </div>
-
-    
-    <div class="server-toggle">
-        <button onclick="showPublic()">Public server</button>
-        <button onclick="showPrivate()">Private server</button>
-    </div>
-
-    
-    <div class="servers">
-
-        <% servers.forEach(server => { %>
-            <a href="/server/<%= server.server_id %>">
-                <div class="server-card">
-                    <div class="icon"></div>
-                    <div class="info">
-                        <p><%= server.name %></p>
-                        <small>
-                            Members: <%= server.members || 'NUMBER change this' %><br>
-                            Created: <%= server.creation_date.toDateString() %>
-                        </small>
-                    </div>
+                <div class="status">
+                    <span>Status:</span>
+                    <span class="<%= user.status %>"></span>
                 </div>
-            </a>
-        <% }) %>
+            </div>
+
+            <div class="profile-center">
+
+                <h2><%= user.username %></h2>
+
+                <div class="profile-pic">
+                    <img src="<%= user.avatar_url || '/uploads/default_icon.png' %>" alt="PFP">
+                </div>
+
+            </div>
+
+            <div class="bio">
+                <h3>Bio</h3>
+                <p><%= user.bio || "No bio yet..." %></p>
+            </div>
+
+        </section>
+
+        <section class="bottom-section">
+
+            <div class="create-server">
+                <a href="/create_server_settings" class="create-server-btn">
+                    + Create Server
+                </a>
+            </div>
+
+            <div class="server-toggle">
+                <button onclick="showPublic()">Public server</button>
+                <button onclick="showPrivate()">Private server</button>
+            </div>
+
+            <div class="servers">
+                <% servers.forEach(server => { %>
+                    <div class="<%= server.is_private ? 'private' : 'public' %>">
+                        <%- include('server_card', { server }) %>
+                    </div>
+                <% }) %>
+            </div>
+
+        </section>
 
     </div>
-
-</div>
-
-<script>
-function showPublic() {
-    
-    console.log("Public servers");
-}
-
-function showPrivate() {
-    console.log("Private servers");
-}
-</script>
 
 </body>
 </html>

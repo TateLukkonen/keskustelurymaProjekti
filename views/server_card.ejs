@@ -1,0 +1,12 @@
+<a href="/server/<%= server.server_id %>">
+  <div class="server-card">
+    <img src="<%= server.server_picture_url || '/uploads/default_icon.png' %>" alt="">
+    <div class="info">
+      <p><%= server.name %></p>
+      <small>
+        Members: <%= server.member_count || 'Member count not found' %><br />
+        Created: <%= server.creation_date.toDateString() %>
+      </small>
+    </div>
+  </div>
+</a>

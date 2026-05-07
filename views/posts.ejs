@@ -1,39 +1,31 @@
 <div class="posts-container">
-
     <% posts.forEach(post => { %>
-
-        <div class="post-card">
-
+        <div class="post-card" id="<%= post.post_id %>">
             <div class="post-header">
-
                 <div class="post-content-body">
-
                     <h3 class="post-title">
-                        <%= post.title || 'Postauksen Otsikko' %>
+                        <%= post.title || 'Post Title' %>
                     </h3>
 
                     <p class="post-message">
-                        <%= post.message || 'Tähän tulee viesti tietokannasta.' %>
+                        <%= post.text_message || 'Post Message.' %>
                     </p>
 
                     <% if (post.post_image) { %>
                         <img 
-                            src="<%= post.post_image %>" 
+                            src="<%= post.img %>" 
                             class="post-image" 
-                            alt="Postauskuva"
+                            alt="Post image"
                         >
                     <% } %>
-
                 </div>
 
                 <div class="user-info">
-
                     <span class="username">
-                        <%= post.display_name || 'Käyttäjä' %>
+                        <%= post.display_name || 'User' %>
                     </span>
 
                     <div class="user-avatar-container">
-
                         <% if (post.avatar_url) { %>
                             <img 
                                 src="<%= post.avatar_url %>" 
@@ -42,35 +34,30 @@
                                 onerror="this.style.display='none'"
                             >
                         <% } %>
-
                     </div>
-
                 </div>
-
             </div>
 
             <div class="post-footer">
-
                 <div class="comments-trigger">
                     Click to see comments...
                 </div>
-
                 <div class="vote-arrows">
 
-                    <button type="button" class="vote-button">
+                    <button type="button" class="vote-button upvote">
                         <div class="arrow-up"></div>
                     </button>
 
-                    <button type="button" class="vote-button">
+                    <div class="score">
+                        <%= post.upvotes - post.downvotes %>
+                    </div>
+
+                    <button type="button" class="vote-button downvote">
                         <div class="arrow-down"></div>
                     </button>
 
                 </div>
-
             </div>
-
         </div>
-
     <% }) %>
-
 </div>
