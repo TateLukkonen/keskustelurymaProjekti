@@ -143,15 +143,11 @@ app.get("/home", isLoggedIn, async (req, res) => {
     });
 
     const sessionUser = await db.getCurrentSessionUser(req.session.user.id);
-    const serversList = await db.getServers()
+    console.log("sessionUser:", sessionUser);
+    const serversList = await db.getServers();
 
     res.render("home", {
-      user: {
-        username: sessionUser.username,
-        display_name: sessionUser.display_name,
-        online: sessionUser.status,
-        bio: sessionUser.bio,
-      },
+      user: sessionUser[0],
       servers: serversList,
     });
   } catch (err) {
@@ -241,39 +237,6 @@ io.on("connection", (socket) => {
 
 // POST METHODS
 
-app.post("/create_server", async (req, res) => {
-  try {
-    const serverLink = crypto.randomBytes(8).toString("hex");
-
-    const isPrivate = req.body.pub_priv === "private_choice" ? 1 : 0;
-
-    let inviteLink;
-
-    if (isPrivate == 1) {
-      inviteLink = crypto.randomBytes(8).toString("hex");
-    } else {
-      inviteLink = null;
-    }
-
-    const data = {
-      name: req.body.server_name,
-      short_name: req.body.short_name,
-      server_pfp: req.body.server_pfp,
-      private: isPrivate,
-      server_link: serverLink,
-      invite_link: inviteLink,
-      owner: req.session.user.id,
-    };
-
-    await db.createServer(data);
-
-    res.redirect("/home");
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error creating server");
-  }
-});
-
 app.post("/join_server", isLoggedIn, async (req, res) => {
   try {
     const serverId = req.body.server_id;
@@ -304,21 +267,21 @@ app.post('/update_display_name', isLoggedIn, async (req, res)  => {
 
 /*
 app.post('/main_page_send_message', async (req, res) => {
-    const message = req.body.message
-
-    await db.setChannelMessages(message)
-
-    res.redirect('/main_page')
-})
-
-app.post('/delete_message', async (req, res) => {
+  const message = req.body.message
+  
+  await db.setChannelMessages(message)
+  
+  res.redirect('/main_page')
+  })
+  
+  app.post('/delete_message', async (req, res) => {
     const message_id = req.body.message_id
-
+    
     await db.deleteMessage(message_id)
-
+    
     res.redirect('/main_page')
-})
-*/
+    })
+    */
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -357,8 +320,45 @@ app.post("/register", upload.single("pfp"), async (req, res) => {
 
     res.redirect("/login");
   } catch (err) {
-    console.error('User registration failed:', err);
-    return res.redirect('/register')
+    console.error("User registration failed:", err);
+    return res.redirect("/register");
+  }
+});
+
+app.post("/create_server", upload.single("pfp"), async (req, res) => {
+  try {
+    const pfp_path = req.file
+      ? `/uploads/${req.file.filename}`
+      : "/uploads/default_icon.png";
+
+    const serverLink = crypto.randomBytes(8).toString("hex");
+
+    const isPrivate = req.body.pub_priv === "private_choice" ? 1 : 0;
+
+    let inviteLink;
+
+    if (isPrivate == 1) {
+      inviteLink = crypto.randomBytes(8).toString("hex");
+    } else {
+      inviteLink = null;
+    }
+
+    const data = {
+      name: req.body.server_name,
+      short_name: req.body.short_name,
+      server_picture_url: pfp_path,
+      private: isPrivate,
+      server_link: serverLink,
+      invite_link: inviteLink,
+      owner: req.session.user.id,
+    };
+
+    await db.createServer(data);
+
+    res.redirect("/home");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error creating server");
   }
 });
 
@@ -398,8 +398,8 @@ app.post("/login", async (req, res) => {
       });
     } catch (err) {
       console.log(err);
-      delete req.session
-      res.redirect('/login')
+      delete req.session;
+      res.redirect("/login");
     }
   } else if (regEmail.test(login) === false) {
     try {
@@ -432,11 +432,10 @@ app.post("/login", async (req, res) => {
         }
       });
     } catch (err) {
-
       console.log(err);
-      delete req.session
-      res.redirect('/login')
-    }  
+      delete req.session;
+      res.redirect("/login");
+    }
   }
 });
 

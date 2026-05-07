@@ -1,8 +1,19 @@
-.server-toggle {
-  text-align: center;
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #2f4154;
+  color: white;
+}
+
+header {
+  background: #8e44ad;
+  height: 20px;
 }
 
 .container {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
   padding: 20px;
 }
 
@@ -10,49 +21,109 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 20px;
+  height: 50vh;
+}
+
+.top-section div {
+  width: 40%;
+}
+
+.bio,
+.server-toggle button,
+.server-card .icon {
+  background: #283848;
+}
+
+.bio,
+.left-info {
+  width: 100%;
+  min-height: 350px;
+  padding: 10px;
+  border-radius: 12px;
+  color: whitesmoke;
+  background-color: #283848;
+  border: 3px solid #3a5168;
+}
+
+.profile-center,
+.profile-pic {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.profile-center {
+  flex-direction: column;
+  width: 20%;
+  text-align: center;
 }
 
 .profile-pic img {
-  width: 280px;
-  height: 280px;
+  width: 220px;
+  height: 220px;
   border-radius: 50%;
+  object-fit: cover;
   background: #ccc;
+  outline: 4px solid #1abc9c;
+  outline-offset: 4px;
 }
 
-.bio {
-  width: 250px;
-  height: 200px;
-  background: #ddd;
-  color: black;
-  padding: 10px;
-}
-
-.status .online {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  background: green;
-  border-radius: 50%;
-}
-
-.status .offline {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  background: red;
-  border-radius: 50%;
-}
-
-.status .incognito {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  background: gray;
-  border-radius: 50%;
+.bottom-section {
+  width: 100%;
 }
 
 .server-toggle {
-  margin: 20px 0;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.server-toggle button {
+  padding: 10px 20px;
+  margin: 0 5px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+}
+
+.server-toggle button:first-child {
+  border: 3px solid #3a5168;
+}
+
+.server-toggle button:last-child {
+  border: 3px solid #3a5168;
+}
+
+.server-toggle button:first-child:hover {
+  background: #4a657d;
+  border-color: #3a5168;
+}
+
+.server-toggle button:last-child:hover {
+  background: #4a657d;
+  border-color: #3a5168;
+}
+
+.create-server {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.create-server-btn {
+  display: inline-block;
+  padding: 10px 18px;
+  background: #1abc9c;
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  border-radius: 8px;
+  border: 3px solid #3a5168;
+  transition: 0.2s ease;
+}
+
+.create-server-btn:hover {
+  background: #16a085;
 }
 
 .servers {
@@ -60,18 +131,48 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 15px;
 }
-
 .server-card {
-  background: #ddd;
+  background: #fdfefe;
   color: black;
   padding: 10px;
   display: flex;
   align-items: center;
+  border-radius: 12px;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.server-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 8px 14px 25px rgba(0, 0, 0, 0.35);
 }
 
 .server-card .icon {
   width: 40px;
   height: 40px;
-  background: #666;
   margin-right: 10px;
+  border-radius: 8px;
+}
+
+.status span:last-child {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.online {
+  background: green;
+  outline: 3px solid #1abc9c;
+}
+
+.offline {
+  background: red;
+  outline: 3px solid #e67e22;
+}
+
+.incognito {
+  background: gray;
+  outline: 3px solid #95a5a6;
 }
