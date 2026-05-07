@@ -309,8 +309,8 @@ app.post("/register", upload.single("pfp"), async (req, res) => {
 
     res.redirect("/login");
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Registration failed");
+    console.error('User registration failed:', err);
+    return res.redirect('/register')
   }
 });
 
@@ -372,21 +372,23 @@ app.post("/login", async (req, res) => {
         if (err) {
           console.log("Password comparison went wrong: ", err);
           delete req.session;
-          res.redirect("/login");
+          return res.redirect("/login");
         }
         if (bcryptRes) {
           console.log("Passwords match");
           const userId = await db.getIdByEmail(login);
           req.session.user = { id: userId };
-          res.redirect("/home"); // main chat view
+          return res.redirect("/home"); // main chat view
         } else {
           console.log("Passwords do not match");
           delete req.session;
-          res.redirect("/login");
+          return res.redirect("/login");
         }
       });
     } catch (err) {
       console.log(err);
+      delete req.session
+      res.redirect('/login')
     }
   } else if (regEmail.test(login) === false) {
     try {
@@ -405,22 +407,25 @@ app.post("/login", async (req, res) => {
         if (err) {
           console.log("Password comparison went wrong: ", err);
           delete req.session;
-          res.redirect("/login");
+          return res.redirect("/login");
         }
         if (bcryptRes) {
           console.log("Passwords match");
           const userId = await db.getIdByUsername(login);
           req.session.user = { id: userId };
-          res.redirect("/home"); // main chat view
+          return res.redirect("/home"); // main chat view
         } else {
           console.log("Passwords do not match");
           delete req.session;
-          res.redirect("/login");
+          return res.redirect("/login");
         }
       });
     } catch (err) {
+
       console.log(err);
-    }
+      delete req.session
+      res.redirect('/login')
+    }  
   }
 });
 
