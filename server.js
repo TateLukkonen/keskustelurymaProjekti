@@ -130,10 +130,7 @@ app.get("/home", isLoggedIn, async (req, res) => {
   try {
     const sessionUser = await db.getCurrentSessionUser(req.session.user.id);
     const serversList = await db.getServers();
-<<<<<<< HEAD
-=======
 
->>>>>>> db87b56094e087a98c3d0acfb581a9aff91bf280
 
     res.render("home", {
       user: sessionUser[0],
@@ -161,12 +158,10 @@ app.get("/server/:id", isLoggedIn, async (req, res) => {
       return res.status(404).send("Server not found");
     }
 
-<<<<<<< HEAD
     const sessionUserData = await db.getCurrentSessionUser(userId);
     const sessionUser = Array.isArray(sessionUserData)
       ? sessionUserData[0]
       : sessionUserData;
-=======
     console.log("Server ID:", serverId);
 
     if (!serverId) {
@@ -174,7 +169,6 @@ app.get("/server/:id", isLoggedIn, async (req, res) => {
     }
 
     const userId = req.session.user.id;
->>>>>>> db87b56094e087a98c3d0acfb581a9aff91bf280
 
     const channelMessages = await db.getChannelMessages(serverId); // gotta change to posts on db level
     const sessionUser = await db.getCurrentSessionUser(userId);
@@ -247,16 +241,13 @@ app.get("/server/:id", isLoggedIn, async (req, res) => {
       serverName: serverInfo.name,
       serverId,
       joined,
-<<<<<<< HEAD
       posts,
       comments,
       members,
       sessionUser,
-=======
       joinedServers,
       memberList,
       posts,
->>>>>>> db87b56094e087a98c3d0acfb581a9aff91bf280
       path: req.path,
     });
   } catch (err) {
@@ -265,8 +256,6 @@ app.get("/server/:id", isLoggedIn, async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
-=======
 // Socket.IO events
 
 io.on("connection", (socket) => {
@@ -322,7 +311,6 @@ io.on("connection", (socket) => {
 
 // POST METHODS
 
->>>>>>> db87b56094e087a98c3d0acfb581a9aff91bf280
 app.post("/join_server", isLoggedIn, async (req, res) => {
   try {
     const serverId = req.body.server_id;
@@ -337,7 +325,6 @@ app.post("/join_server", isLoggedIn, async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
 app.post(
   "/servers/:serverId/posts",
   isLoggedIn,
@@ -345,7 +332,6 @@ app.post(
   async (req, res) => {
     const serverId = req.params.serverId;
     const userId = req.session.user.id;
-=======
 app.post('/update_display_name', isLoggedIn, async (req, res)  => {
   try {
     const newName = req.body.display_name
@@ -377,7 +363,6 @@ app.post('/main_page_send_message', async (req, res) => {
     res.redirect('/main_page')
     })
     */
->>>>>>> db87b56094e087a98c3d0acfb581a9aff91bf280
 
     try {
       const joined = await db.isMember(serverId, userId);
