@@ -11,12 +11,22 @@
 </head>
 
 <body>
+
+    <a href="/home" class="back-home-btn">
+        ← Back to Home
+    </a>
+
     <form action="/create_server" id="serverForm" method="POST" enctype="multipart/form-data">
+
         <input type="text" name="server_name" placeholder="Server name" required>
+
         <input type="text" name="short_name" placeholder="Display name" required>
 
         <div class="pfp-group">
-            <label>PICTURE (Max 512KB)</label>
+
+            <label>
+                PICTURE (Max 512KB)
+            </label>
 
             <div class="image-frame">
                 <img id="preview" alt="Preview">
@@ -24,17 +34,29 @@
             </div>
 
             <input type="file" id="pfp_input" name="pfp" accept="image/*">
+
         </div>
 
         <div class="radio-group">
+
             <input type="radio" id="public" name="pub_priv" value="public_choice" checked>
-            <label for="public">Public</label>
+
+            <label for="public">
+                Public
+            </label>
 
             <input type="radio" id="private" name="pub_priv" value="private_choice">
-            <label for="private">Private</label>
+
+            <label for="private">
+                Private
+            </label>
+
         </div>
 
-        <button type="submit">Create Server</button>
+        <button type="submit">
+            Create Server
+        </button>
+
     </form>
 
     <script>
@@ -43,6 +65,7 @@
         const placeholder = document.getElementById("placeholder");
 
         input.addEventListener("change", function () {
+
             const file = this.files[0];
 
             if (!file) {
@@ -53,10 +76,13 @@
             }
 
             preview.src = URL.createObjectURL(file);
+
             preview.style.display = "block";
+
             placeholder.style.display = "none";
         });
     </script>
+
 </body>
 
 </html>
