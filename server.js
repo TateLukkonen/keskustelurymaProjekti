@@ -143,6 +143,7 @@ app.get("/home", isLoggedIn, async (req, res) => {
     });
 
     const sessionUser = await db.getCurrentSessionUser(req.session.user.id);
+    const serversList = await db.getServers()
 
     res.render("home", {
       user: {
@@ -151,7 +152,7 @@ app.get("/home", isLoggedIn, async (req, res) => {
         online: sessionUser.status,
         bio: sessionUser.bio,
       },
-      servers: [{ name: "Test Server", members: 10, createdAt: new Date() }],
+      servers: serversList,
     });
   } catch (err) {
     console.error("Database error: " + err);

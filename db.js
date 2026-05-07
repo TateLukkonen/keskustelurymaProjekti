@@ -133,6 +133,7 @@ export async function getServers() {
     server.private,
     server.invite_link,
     server.server_link,
+    server.creation_date,
     users.user_id AS owner_id,
     users.username AS owner_username
     FROM server
