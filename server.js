@@ -66,7 +66,7 @@ function isLoggedIn(req, res, next) {
 
 // Paths
 app.get("/", isLoggedIn, (req, res) => {
-  res.redirect("/main_page");
+  res.redirect("/home");
 });
 
 app.get("/login", (req, res) => {
@@ -264,7 +264,7 @@ app.post("/create_server", async (req, res) => {
 
     await db.createServer(data);
 
-    res.redirect("/main_page");
+    res.redirect("/home");
   } catch (err) {
     console.error(err);
     res.status(500).send("Error creating server");
@@ -372,7 +372,7 @@ app.post("/login", async (req, res) => {
           console.log("Passwords match");
           const userId = await db.getIdByEmail(login);
           req.session.user = { id: userId };
-          res.redirect("/main_page"); // main chat view
+          res.redirect("/home"); // main chat view
         } else {
           console.log("Passwords do not match");
           delete req.session;
@@ -405,7 +405,7 @@ app.post("/login", async (req, res) => {
           console.log("Passwords match");
           const userId = await db.getIdByUsername(login);
           req.session.user = { id: userId };
-          res.redirect("/main_page"); // main chat view
+          res.redirect("/home"); // main chat view
         } else {
           console.log("Passwords do not match");
           delete req.session;
