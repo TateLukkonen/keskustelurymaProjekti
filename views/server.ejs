@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link el rel="stylesheet" href="/styles/posts.css">
     <link rel="stylesheet" href="/styles/basic.css">
     <link rel="stylesheet" href="/styles/channel.css">
 
@@ -32,7 +33,7 @@
                 <p>You are a member ✔</p>
             <% } %>
 
-            <div class="directory"> <!-- example: | home > servers > Server Name > Channel Name |, its all <a> elements, might need to be an ejs file-->
+            <div class="directory"> <!-- example: | home > servers > Server Name > Channel Name | -->
                 <p>| <a href="/home">home</a> > Server Name > Channel Name |</p>
             </div>
             
@@ -47,7 +48,25 @@
         <div class="bottom-section"> <!-- 3 divs -->
             <%- include('server_list', { data: [{ name: 'SERVER' }, { name: 'SLIME' }, { name: 'TERRA' }, { name: 'VELCHAT' }, { name: 'LUNYX' }] }) %> <!-- server/dm list, def an ejs -->
 
-            <div class="posts">posts.ejs will be here</div> <!-- chat, should use the ejs file, so rework that -->
+             <%- include('posts', {
+    posts: [
+        {
+            title: 'First Post',
+            message: 'Hello world',
+            display_name: 'Mikko',
+            avatar_url: '/uploads/default_icon.png',
+            post_image: '/uploads/default_post.png'
+        },
+
+        {
+            title: 'Second Post',
+            message: 'Another message',
+            display_name: 'Anna',
+            avatar_url: '/uploads/default_icon.png',
+            post_image: ''
+        }
+    ]
+}) %>
 
             <%- include('member_list', { data: [{ user_id: 1, name: 'MEMBER', pfp: '/uploads/default_icon.png', status: 'online', bio: 'this is my bio description'}]}) %> <!-- shows all members in the channel, probs ejs  -->
         </div>

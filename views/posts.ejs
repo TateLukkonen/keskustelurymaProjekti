@@ -1,0 +1,76 @@
+<div class="posts-container">
+
+    <% posts.forEach(post => { %>
+
+        <div class="post-card">
+
+            <div class="post-header">
+
+                <div class="post-content-body">
+
+                    <h3 class="post-title">
+                        <%= post.title || 'Postauksen Otsikko' %>
+                    </h3>
+
+                    <p class="post-message">
+                        <%= post.message || 'Tähän tulee viesti tietokannasta.' %>
+                    </p>
+
+                    <% if (post.post_image) { %>
+                        <img 
+                            src="<%= post.post_image %>" 
+                            class="post-image" 
+                            alt="Postauskuva"
+                        >
+                    <% } %>
+
+                </div>
+
+                <div class="user-info">
+
+                    <span class="username">
+                        <%= post.display_name || 'Käyttäjä' %>
+                    </span>
+
+                    <div class="user-avatar-container">
+
+                        <% if (post.avatar_url) { %>
+                            <img 
+                                src="<%= post.avatar_url %>" 
+                                class="user-avatar-img"
+                                alt="Avatar"
+                                onerror="this.style.display='none'"
+                            >
+                        <% } %>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="post-footer">
+
+                <div class="comments-trigger">
+                    Click to see comments...
+                </div>
+
+                <div class="vote-arrows">
+
+                    <button type="button" class="vote-button">
+                        <div class="arrow-up"></div>
+                    </button>
+
+                    <button type="button" class="vote-button">
+                        <div class="arrow-down"></div>
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    <% }) %>
+
+</div>

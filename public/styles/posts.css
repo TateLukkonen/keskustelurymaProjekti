@@ -1,0 +1,147 @@
+.posts-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  align-items: center;
+}
+
+.post-card {
+  background-color: #d1d1d1;
+  width: 100%;
+  max-width: 700px;
+  min-height: 300px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  gap: 20px;
+}
+
+.post-content-body {
+  flex-grow: 1;
+  width: 100%;
+}
+
+.post-title {
+  margin: 0 0 10px 0;
+  color: #222;
+  font-size: 1.5rem;
+}
+
+.post-message {
+  color: #333;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.post-image {
+  width: 100%;
+  max-height: 400px;
+  display: block;
+  margin-top: 15px;
+  border-radius: 4px;
+  object-fit: contain;
+  background-color: #bdbdbd;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  min-width: 70px;
+}
+
+.user-avatar-container {
+  width: 50px;
+  height: 50px;
+  background-color: #b22222;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid #fff;
+}
+
+.user-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.username {
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: #333;
+  text-align: center;
+}
+
+.post-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.vote-arrows {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.vote-button {
+  background: transparent;
+  border: none;
+  padding: 5px;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.vote-button:hover {
+  transform: scale(1.1);
+}
+
+.vote-button:active {
+  transform: scale(0.95);
+}
+
+.arrow-up {
+  width: 0;
+  height: 0;
+  border-left: 15px solid transparent;
+  border-right: 15px solid transparent;
+  border-bottom: 20px solid #2ecc71;
+}
+
+.arrow-down {
+  width: 0;
+  height: 0;
+  border-left: 15px solid transparent;
+  border-right: 15px solid transparent;
+  border-top: 20px solid #e74c3c;
+}
+
+.comments-trigger {
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: #222;
+  transition: opacity 0.15s ease;
+}
+
+.comments-trigger:hover {
+  opacity: 0.7;
+}

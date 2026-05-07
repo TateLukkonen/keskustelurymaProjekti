@@ -66,7 +66,7 @@ function isLoggedIn(req, res, next) {
 
 // Paths
 app.get("/", isLoggedIn, (req, res) => {
-  res.redirect("/main_page");
+  res.redirect("/home");
 });
 
 app.get("/login", (req, res) => {
@@ -91,8 +91,8 @@ app.get("/servers", isLoggedIn, async (req, res) => {
   }
 });
 
-app.get("/Post", isLoggedIn, (req, res) => {
-  res.render("Post", { path: req.path });
+app.get("/posts", isLoggedIn, (req, res) => {
+  res.render("posts", { path: req.path });
 });
 app.get("/register", (req, res) => {
   res.render("register");
@@ -144,10 +144,11 @@ app.get("/home", isLoggedIn, async (req, res) => {
 
     const sessionUser = await db.getCurrentSessionUser(req.session.user.id);
     console.log("sessionUser:", sessionUser);
+    const serversList = await db.getServers();
 
     res.render("home", {
       user: sessionUser[0],
-      servers: [{ name: "Test Server", members: 10, createdAt: new Date() }],
+      servers: serversList,
     });
   } catch (err) {
     console.error("Database error: " + err);
@@ -164,6 +165,12 @@ app.get("/server/:id", isLoggedIn, async (req, res) => {
   const serverId = req.params.id;
 
   try {
+    const server = await db.getServerById(serverId);
+
+    if (!server) {
+      return res.status(404).send("Server not found");
+    }
+
     console.log("Server ID:", serverId);
 
     if (!serverId) {
@@ -228,39 +235,6 @@ io.on("connection", (socket) => {
 
 // POST METHODS
 
-app.post("/create_server", async (req, res) => {
-  try {
-    const serverLink = crypto.randomBytes(8).toString("hex");
-
-    const isPrivate = req.body.pub_priv === "private_choice" ? 1 : 0;
-
-    let inviteLink;
-
-    if (isPrivate == 1) {
-      inviteLink = crypto.randomBytes(8).toString("hex");
-    } else {
-      inviteLink = null;
-    }
-
-    const data = {
-      name: req.body.server_name,
-      short_name: req.body.short_name,
-      server_pfp: req.body.server_pfp,
-      private: isPrivate,
-      server_link: serverLink,
-      invite_link: inviteLink,
-      owner: req.session.user.id,
-    };
-
-    await db.createServer(data);
-
-    res.redirect("/main_page");
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error creating server");
-  }
-});
-
 app.post("/join_server", isLoggedIn, async (req, res) => {
   try {
     const serverId = req.body.server_id;
@@ -277,21 +251,21 @@ app.post("/join_server", isLoggedIn, async (req, res) => {
 
 /*
 app.post('/main_page_send_message', async (req, res) => {
-    const message = req.body.message
-
-    await db.setChannelMessages(message)
-
-    res.redirect('/main_page')
-})
-
-app.post('/delete_message', async (req, res) => {
+  const message = req.body.message
+  
+  await db.setChannelMessages(message)
+  
+  res.redirect('/main_page')
+  })
+  
+  app.post('/delete_message', async (req, res) => {
     const message_id = req.body.message_id
-
+    
     await db.deleteMessage(message_id)
-
+    
     res.redirect('/main_page')
-})
-*/
+    })
+    */
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -330,8 +304,45 @@ app.post("/register", upload.single("pfp"), async (req, res) => {
 
     res.redirect("/login");
   } catch (err) {
+    console.error("User registration failed:", err);
+    return res.redirect("/register");
+  }
+});
+
+app.post("/create_server", upload.single("pfp"), async (req, res) => {
+  try {
+    const pfp_path = req.file
+      ? `/uploads/${req.file.filename}`
+      : "/uploads/default_icon.png";
+
+    const serverLink = crypto.randomBytes(8).toString("hex");
+
+    const isPrivate = req.body.pub_priv === "private_choice" ? 1 : 0;
+
+    let inviteLink;
+
+    if (isPrivate == 1) {
+      inviteLink = crypto.randomBytes(8).toString("hex");
+    } else {
+      inviteLink = null;
+    }
+
+    const data = {
+      name: req.body.server_name,
+      short_name: req.body.short_name,
+      server_picture_url: pfp_path,
+      private: isPrivate,
+      server_link: serverLink,
+      invite_link: inviteLink,
+      owner: req.session.user.id,
+    };
+
+    await db.createServer(data);
+
+    res.redirect("/home");
+  } catch (err) {
     console.error(err);
-    res.status(500).send("Registration failed");
+    res.status(500).send("Error creating server");
   }
 });
 
@@ -356,21 +367,23 @@ app.post("/login", async (req, res) => {
         if (err) {
           console.log("Password comparison went wrong: ", err);
           delete req.session;
-          res.redirect("/login");
+          return res.redirect("/login");
         }
         if (bcryptRes) {
           console.log("Passwords match");
           const userId = await db.getIdByEmail(login);
           req.session.user = { id: userId };
-          res.redirect("/main_page"); // main chat view
+          return res.redirect("/home"); // main chat view
         } else {
           console.log("Passwords do not match");
           delete req.session;
-          res.redirect("/login");
+          return res.redirect("/login");
         }
       });
     } catch (err) {
       console.log(err);
+      delete req.session;
+      res.redirect("/login");
     }
   } else if (regEmail.test(login) === false) {
     try {
@@ -389,21 +402,23 @@ app.post("/login", async (req, res) => {
         if (err) {
           console.log("Password comparison went wrong: ", err);
           delete req.session;
-          res.redirect("/login");
+          return res.redirect("/login");
         }
         if (bcryptRes) {
           console.log("Passwords match");
           const userId = await db.getIdByUsername(login);
           req.session.user = { id: userId };
-          res.redirect("/main_page"); // main chat view
+          return res.redirect("/home"); // main chat view
         } else {
           console.log("Passwords do not match");
           delete req.session;
-          res.redirect("/login");
+          return res.redirect("/login");
         }
       });
     } catch (err) {
       console.log(err);
+      delete req.session;
+      res.redirect("/login");
     }
   }
 });

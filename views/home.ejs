@@ -23,8 +23,8 @@
                     Display name: <%= user.display_name %>
                 </p>
 
-                <form action="/update-profile" method="POST" class="edit-form">
-                    <input type="text" name="displayName" placeholder="Edit display name">
+                <form action="/update_display_name" method="POST" class="edit-form">
+                    <input type="text" name="display_name" placeholder="Edit display name">
                     <button type="submit">Save changes</button>
                 </form>
 
@@ -66,7 +66,7 @@
 
             <div class="servers">
                 <% servers.forEach(server => { %>
-                    <div class="server-card <%= server.is_private ? 'private' : 'public' %>">
+                    <div class="<%= server.is_private ? 'private' : 'public' %>">
                         <%- include('server_card', { server }) %>
                     </div>
                 <% }) %>
