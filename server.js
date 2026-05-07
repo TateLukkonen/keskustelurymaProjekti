@@ -168,6 +168,12 @@ app.get("/server/:id", isLoggedIn, async (req, res) => {
   const serverId = req.params.id;
 
   try {
+    const server = await db.getServerById(serverId);
+
+    if (!server) {
+      return res.status(404).send("Server not found");
+    }
+
     console.log("Server ID:", serverId);
 
     if (!serverId) {
