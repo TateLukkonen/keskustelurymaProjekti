@@ -288,6 +288,20 @@ app.post("/join_server", isLoggedIn, async (req, res) => {
   }
 });
 
+app.post('/update_display_name', isLoggedIn, async (req, res)  => {
+  try {
+    const newName = req.body.display_name
+    const userId = req.session.user.id;
+
+    await db.updateDisplayName(newName, userId);
+
+    res.redirect(`/home`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error changing display name of user: ", userId);
+  }
+})
+
 /*
 app.post('/main_page_send_message', async (req, res) => {
     const message = req.body.message

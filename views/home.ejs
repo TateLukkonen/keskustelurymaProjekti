@@ -18,8 +18,8 @@
             <h2><%= user.username %></h2>
             <p>Display name: <%= user.display_name %></p>
 
-            <form action="/update-profile" method="POST">
-                <input type="text" name="displayName" placeholder="Edit display name">
+            <form action="/update_display_name" method="POST">
+                <input type="text" name="display_name" placeholder="Edit display name">
                 <button type="submit">Save changes</button>
             </form>
 
@@ -58,7 +58,7 @@
                     <div class="info">
                         <p><%= server.name %></p>
                         <small>
-                            Members: <%= server.members || 'NUMBER change this' %><br>
+                            Members: <%= server.members || 'Member count not found' %><br>
                             Created: <%= server.creation_date.toDateString() %>
                         </small>
                     </div>

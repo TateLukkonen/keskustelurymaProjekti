@@ -369,6 +369,17 @@ const getJoinedServers = async (user_id) => {
   return rows;
 };
 
+const updateDisplayName = async (new_name, user_id) => {
+  const connection = await getConnection();
+
+  const sql = `UPDATE users 
+              SET display_name = ? 
+              WHERE user_id = ?
+              `
+  await connection.execute(sql, [new_name, user_id]);
+  connection.release();
+};
+
 export default {
   getChannelMessages,
   getChannelMessage,
@@ -385,4 +396,5 @@ export default {
   isMember,
   getServerById,
   getJoinedServers,
+  updateDisplayName
 };
