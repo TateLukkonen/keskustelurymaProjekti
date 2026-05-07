@@ -11,7 +11,7 @@ CREATE TABLE server (
    server_link VARCHAR(100) UNIQUE NOT NULL,
    invite_link VARCHAR(100) UNIQUE NULL,
    private BOOLEAN NOT NULL,
-   server_picture_url VARCHAR(255) NULL
+   server_picture_url VARCHAR(1000) NULL
 ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS users;

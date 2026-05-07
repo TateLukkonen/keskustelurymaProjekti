@@ -239,38 +239,6 @@ io.on("connection", (socket) => {
 
 // POST METHODS
 
-app.post("/create_server", async (req, res) => {
-  try {
-    const serverLink = crypto.randomBytes(8).toString("hex");
-
-    const isPrivate = req.body.pub_priv === "private_choice" ? 1 : 0;
-
-    let inviteLink;
-
-    if (isPrivate == 1) {
-      inviteLink = crypto.randomBytes(8).toString("hex");
-    } else {
-      inviteLink = null;
-    }
-
-    const data = {
-      name: req.body.server_name,
-      short_name: req.body.short_name,
-      server_pfp: req.body.server_pfp,
-      private: isPrivate,
-      server_link: serverLink,
-      invite_link: inviteLink,
-      owner: req.session.user.id,
-    };
-
-    await db.createServer(data);
-
-    res.redirect("/home");
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error creating server");
-  }
-});
 
 app.post("/join_server", isLoggedIn, async (req, res) => {
   try {
@@ -288,21 +256,21 @@ app.post("/join_server", isLoggedIn, async (req, res) => {
 
 /*
 app.post('/main_page_send_message', async (req, res) => {
-    const message = req.body.message
-
-    await db.setChannelMessages(message)
-
-    res.redirect('/main_page')
-})
-
-app.post('/delete_message', async (req, res) => {
+  const message = req.body.message
+  
+  await db.setChannelMessages(message)
+  
+  res.redirect('/main_page')
+  })
+  
+  app.post('/delete_message', async (req, res) => {
     const message_id = req.body.message_id
-
+    
     await db.deleteMessage(message_id)
-
+    
     res.redirect('/main_page')
-})
-*/
+    })
+    */
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -343,6 +311,43 @@ app.post("/register", upload.single("pfp"), async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send("Registration failed");
+  }
+});
+
+app.post("/create_server", upload.single("pfp"), async (req, res) => {
+  try {
+    const pfp_path = req.file
+      ? `/uploads/${req.file.filename}`
+      : "/uploads/default_icon.png";
+
+    const serverLink = crypto.randomBytes(8).toString("hex");
+
+    const isPrivate = req.body.pub_priv === "private_choice" ? 1 : 0;
+
+    let inviteLink;
+
+    if (isPrivate == 1) {
+      inviteLink = crypto.randomBytes(8).toString("hex");
+    } else {
+      inviteLink = null;
+    }
+
+    const data = {
+      name: req.body.server_name,
+      short_name: req.body.short_name,
+      server_picture_url: pfp_path,
+      private: isPrivate,
+      server_link: serverLink,
+      invite_link: inviteLink,
+      owner: req.session.user.id,
+    };
+
+    await db.createServer(data);
+
+    res.redirect("/home");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error creating server");
   }
 });
 

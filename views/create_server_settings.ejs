@@ -6,14 +6,22 @@
     <title>Document</title>
 </head>
 <body>
-    <form action="/create_server" id="serverForm" method="POST">
+    <form action="/create_server" id="serverForm" method="POST" enctype="multipart/form-data">
         <input type="text" name="server_name" placeholder="Server name" required>
         <input type="text" name="short_name" placeholder="Display name" rquired>
-        <input type="radio" name="server_pfp" value="pfp1">
-        <input type="radio" name="server_pfp" value="pfp2">
-        <input type="radio" name="server_pfp" value="pfp3">
-        <input type="radio" name="server_pfp" value="pfp4">
-        <input type="radio" name="server_pfp" value="pfp5">
+        <div class="pfp-group">
+            <label>PICTURE (Max 512KB)</label>
+            <div class="image-frame">
+                <img id="preview" src="#" alt="Preview" />
+                <span id="placeholder">No Image</span>
+            </div>
+            <input
+                type="file"
+                id="pfp_input"
+                name="pfp"
+                accept="image/*"
+            />
+        </div>
         <input type="radio" name="pub_priv" value="public_choice"> Public
         <input type="radio" name="pub_priv" value="private_choice"> Private
         <button type="submit">Create Server</button>
