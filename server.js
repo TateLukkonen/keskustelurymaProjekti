@@ -7,39 +7,41 @@ import bcrypt from "bcrypt";
 import http from "node:http";
 import { Server } from "socket.io";
 import crypto from "node:crypto";
+import { fileURLToPath } from "node:url";
+import multer from "multer";
 
 import config from "./config.json" with { type: "json" };
 import dbconfig from "./dbconfig.json" with { type: "json" };
 import db from "./db.js";
-import { fileURLToPath } from "node:url";
-import multer from "multer";
 
-// RegEx
 const regEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Constants
 const { host, port } = config;
 
-// Database information
 const dbHost = dbconfig.host;
 const dbName = dbconfig.database;
 const dbUser = dbconfig.user;
 const dbPwd = dbconfig.password;
 
 const app = express();
-
 const server = http.createServer(app);
 const io = new Server(server);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Server configuration
+const pool = mysql.createPool({
+  host: dbHost,
+  user: dbUser,
+  password: dbPwd,
+  database: dbName,
+});
+
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// Static
 app.use(express.urlencoded({ extended: true }));
+
 app.use(
   session({
     secret: "supersecretkey",
@@ -51,26 +53,37 @@ app.use(
 
 app.use(express.static("public"));
 app.use("/styles", express.static("public/styles"));
-
-// uploads folder for profile pictures
 app.use("/uploads", express.static("uploads"));
 
-// Functions
 function isLoggedIn(req, res, next) {
   if (!req.session.user) {
     return res.redirect("/login");
-  } else {
-    next();
   }
+
+  next();
 }
 
-// Paths
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+const upload = multer({ storage });
+
 app.get("/", isLoggedIn, (req, res) => {
   res.redirect("/home");
 });
 
 app.get("/login", (req, res) => {
   res.render("login", { path: req.path });
+});
+
+app.get("/register", (req, res) => {
+  res.render("register");
 });
 
 app.get("/create_server_settings", isLoggedIn, (req, res) => {
@@ -94,28 +107,16 @@ app.get("/servers", isLoggedIn, async (req, res) => {
 app.get("/posts", isLoggedIn, (req, res) => {
   res.render("posts", { path: req.path });
 });
-app.get("/register", (req, res) => {
-  res.render("register");
-});
 
-//  GET METHODS
 app.get("/main_page", isLoggedIn, async (req, res) => {
-  let connection;
   try {
-    connection = await mysql.createConnection({
-      host: dbHost,
-      user: dbUser,
-      password: dbPwd,
-      database: dbName,
-    });
-
     const channelMsg = await db.getChannelMessages(1);
     const servers = await db.getServers();
     const sessionUser = await db.getCurrentSessionUser(req.session.user.id);
 
     res.render("main_page", {
       channelMessages: channelMsg,
-      servers: servers,
+      servers,
       sessionUser: sessionUser[0],
       path: req.path,
     });
@@ -123,27 +124,12 @@ app.get("/main_page", isLoggedIn, async (req, res) => {
     console.error("Database error: " + err);
     res.status(500).send("Internal Server Error");
   }
-  if (connection) {
-    try {
-      await connection.end();
-    } catch (closeError) {
-      console.error("Error closing connection:", closeError);
-    }
-  }
 });
 
 app.get("/home", isLoggedIn, async (req, res) => {
-  let connection;
   try {
-    connection = await mysql.createConnection({
-      host: dbHost,
-      user: dbUser,
-      password: dbPwd,
-      database: dbName,
-    });
-
     const sessionUser = await db.getCurrentSessionUser(req.session.user.id);
-    const serversList = await db.getServers()
+    const serversList = await db.getServers();
 
     res.render("home", {
       user: {
@@ -160,39 +146,96 @@ app.get("/home", isLoggedIn, async (req, res) => {
   }
 });
 
-// ... muiden app.get-reittien jatkoksi
 app.get("/chat", isLoggedIn, (req, res) => {
   res.render("chat", { path: req.path });
 });
 
 app.get("/server/:id", isLoggedIn, async (req, res) => {
   const serverId = req.params.id;
+  const userId = req.session.user.id;
 
   try {
-    const server = await db.getServerById(serverId);
+    const serverData = await db.getServerById(serverId);
+    const serverInfo = Array.isArray(serverData) ? serverData[0] : serverData;
 
-    if (!server) {
+    if (!serverInfo) {
       return res.status(404).send("Server not found");
     }
 
-    console.log("Server ID:", serverId);
-
-    if (!serverId) {
-      return res.status(400).send("Server ID missing");
-    }
-
-    const channelMessages = await db.getChannelMessages(serverId); // gotta change to posts on db level
-    const sessionUser = await db.getCurrentSessionUser(req.session.user.id);
-
-    const userId = req.session.user.id;
+    const sessionUserData = await db.getCurrentSessionUser(userId);
+    const sessionUser = Array.isArray(sessionUserData)
+      ? sessionUserData[0]
+      : sessionUserData;
 
     const joined = await db.isMember(serverId, userId);
 
+    const [posts] = await pool.query(
+      `
+      SELECT 
+        p.post_id,
+        p.server_id,
+        p.user_id,
+        p.title,
+        p.img,
+        p.text_content,
+        p.creation_date,
+        p.upvotes,
+        p.downvotes,
+        u.username,
+        u.display_name,
+        u.avatar_url
+      FROM posts p
+      JOIN users u ON u.user_id = p.user_id
+      WHERE p.server_id = ?
+      ORDER BY p.creation_date DESC
+      `,
+      [serverId],
+    );
+
+    const [comments] = await pool.query(
+      `
+      SELECT 
+        pc.comment_id,
+        pc.post_id,
+        pc.user_id,
+        pc.text_content,
+        pc.creation_date,
+        u.username,
+        u.display_name,
+        u.avatar_url
+      FROM post_comments pc
+      JOIN users u ON u.user_id = pc.user_id
+      JOIN posts p ON p.post_id = pc.post_id
+      WHERE p.server_id = ?
+      ORDER BY pc.creation_date ASC
+      `,
+      [serverId],
+    );
+
+    const [members] = await pool.query(
+      `
+      SELECT 
+        u.user_id,
+        u.display_name AS name,
+        u.avatar_url AS pfp,
+        u.status,
+        u.bio
+      FROM member_list ml
+      JOIN users u ON u.user_id = ml.user_id
+      WHERE ml.server_id = ?
+      ORDER BY u.display_name
+      `,
+      [serverId],
+    );
+
     res.render("server", {
-      channelMessages, // change to posts after
-      sessionUser: sessionUser[0],
+      serverName: serverInfo.name,
       serverId,
       joined,
+      posts,
+      comments,
+      members,
+      sessionUser,
       path: req.path,
     });
   } catch (err) {
@@ -201,45 +244,6 @@ app.get("/server/:id", isLoggedIn, async (req, res) => {
   }
 });
 
-// Socket.IO events
-
-io.on("connection", (socket) => {
-  console.log("a user connected");
-  socket.on("disconnect", () => {
-    console.log("user disconnected");
-  });
-
-  socket.on("chat message", async (msg) => {
-    try {
-      const isMember = await db.isMember(msg.serverId, msg.userId);
-
-      if (!isMember) return;
-
-      const msgId = await db.setChannelMessages(msg);
-      const msgInfo = await db.getChannelMessage(msgId.message_id);
-
-      io.to(`server_${msg.serverId}`).emit("chat message", msgInfo[0]);
-    } catch (err) {
-      console.error("Socket message error:", err);
-    }
-  });
-
-  socket.on("delete message", async (message_id) => {
-    await db.deleteMessage(message_id);
-    io.emit("delete message", message_id);
-  });
-});
-
-io.on("connection", (socket) => {
-  socket.on("join_server_room", (serverId) => {
-    socket.join(`server_${serverId}`);
-    console.log("joined room:", serverId);
-  });
-});
-
-// POST METHODS
-
-
 app.post("/join_server", isLoggedIn, async (req, res) => {
   try {
     const serverId = req.body.server_id;
@@ -247,41 +251,126 @@ app.post("/join_server", isLoggedIn, async (req, res) => {
 
     await db.joinServer(serverId, userId);
 
-    res.redirect(`/channel/${serverId}`);
+    res.redirect(`/server/${serverId}`);
   } catch (err) {
     console.error(err);
     res.status(500).send("Failed to join server");
   }
 });
 
-/*
-app.post('/main_page_send_message', async (req, res) => {
-  const message = req.body.message
-  
-  await db.setChannelMessages(message)
-  
-  res.redirect('/main_page')
-  })
-  
-  app.post('/delete_message', async (req, res) => {
-    const message_id = req.body.message_id
-    
-    await db.deleteMessage(message_id)
-    
-    res.redirect('/main_page')
-    })
-    */
+app.post(
+  "/servers/:serverId/posts",
+  isLoggedIn,
+  upload.single("img"),
+  async (req, res) => {
+    const serverId = req.params.serverId;
+    const userId = req.session.user.id;
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/");
+    try {
+      const joined = await db.isMember(serverId, userId);
+
+      if (!joined) {
+        return res.redirect(`/server/${serverId}`);
+      }
+
+      const img = req.file ? `/uploads/${req.file.filename}` : null;
+
+      await pool.query(
+        `
+      INSERT INTO posts 
+      (server_id, user_id, title, img, text_content, creation_date)
+      VALUES (?, ?, ?, ?, ?, NOW())
+      `,
+        [serverId, userId, req.body.title, img, req.body.text_content],
+      );
+
+      res.redirect(`/server/${serverId}`);
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Failed to create post");
+    }
   },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
+);
+
+app.post("/posts/:postId/comments", isLoggedIn, async (req, res) => {
+  const postId = req.params.postId;
+  const userId = req.session.user.id;
+
+  try {
+    const [posts] = await pool.query(
+      "SELECT server_id FROM posts WHERE post_id = ?",
+      [postId],
+    );
+
+    if (posts.length === 0) {
+      return res.redirect("/home");
+    }
+
+    await pool.query(
+      `
+      INSERT INTO post_comments
+      (post_id, user_id, text_content, creation_date)
+      VALUES (?, ?, ?, NOW())
+      `,
+      [postId, userId, req.body.text_content],
+    );
+
+    res.redirect(`/server/${posts[0].server_id}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Failed to comment");
+  }
 });
 
-const upload = multer({ storage });
+app.post("/posts/:postId/upvote", isLoggedIn, async (req, res) => {
+  const postId = req.params.postId;
+
+  try {
+    const [posts] = await pool.query(
+      "SELECT server_id FROM posts WHERE post_id = ?",
+      [postId],
+    );
+
+    if (posts.length === 0) {
+      return res.redirect("/home");
+    }
+
+    await pool.query(
+      "UPDATE posts SET upvotes = upvotes + 1 WHERE post_id = ?",
+      [postId],
+    );
+
+    res.redirect(`/server/${posts[0].server_id}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Failed to upvote");
+  }
+});
+
+app.post("/posts/:postId/downvote", isLoggedIn, async (req, res) => {
+  const postId = req.params.postId;
+
+  try {
+    const [posts] = await pool.query(
+      "SELECT server_id FROM posts WHERE post_id = ?",
+      [postId],
+    );
+
+    if (posts.length === 0) {
+      return res.redirect("/home");
+    }
+
+    await pool.query(
+      "UPDATE posts SET downvotes = downvotes + 1 WHERE post_id = ?",
+      [postId],
+    );
+
+    res.redirect(`/server/${posts[0].server_id}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Failed to downvote");
+  }
+});
 
 app.post("/register", upload.single("pfp"), async (req, res) => {
   try {
@@ -309,8 +398,8 @@ app.post("/register", upload.single("pfp"), async (req, res) => {
 
     res.redirect("/login");
   } catch (err) {
-    console.error('User registration failed:', err);
-    return res.redirect('/register')
+    console.error("User registration failed:", err);
+    return res.redirect("/register");
   }
 });
 
@@ -321,7 +410,6 @@ app.post("/create_server", upload.single("pfp"), async (req, res) => {
       : "/uploads/default_icon.png";
 
     const serverLink = crypto.randomBytes(8).toString("hex");
-
     const isPrivate = req.body.pub_priv === "private_choice" ? 1 : 0;
 
     let inviteLink;
@@ -357,16 +445,7 @@ app.post("/login", async (req, res) => {
 
   if (regEmail.test(login) === true) {
     try {
-      async function loginFunction(login, password) {
-        const foundUserHashedPass = await db.attemptLogin(
-          false,
-          login,
-          password,
-        );
-        return foundUserHashedPass;
-      }
-
-      const hashedPass = await loginFunction(login, password);
+      const hashedPass = await db.attemptLogin(false, login, password);
 
       bcrypt.compare(password, hashedPass, async function (err, bcryptRes) {
         if (err) {
@@ -374,34 +453,24 @@ app.post("/login", async (req, res) => {
           delete req.session;
           return res.redirect("/login");
         }
+
         if (bcryptRes) {
-          console.log("Passwords match");
           const userId = await db.getIdByEmail(login);
           req.session.user = { id: userId };
-          return res.redirect("/home"); // main chat view
-        } else {
-          console.log("Passwords do not match");
-          delete req.session;
-          return res.redirect("/login");
+          return res.redirect("/home");
         }
+
+        delete req.session;
+        return res.redirect("/login");
       });
     } catch (err) {
       console.log(err);
-      delete req.session
-      res.redirect('/login')
+      delete req.session;
+      res.redirect("/login");
     }
-  } else if (regEmail.test(login) === false) {
+  } else {
     try {
-      async function loginFunction(login, password) {
-        const foundUserHashedPass = await db.attemptLogin(
-          login,
-          false,
-          password,
-        );
-        return foundUserHashedPass;
-      }
-
-      const hashedPass = await loginFunction(login, password);
+      const hashedPass = await db.attemptLogin(login, false, password);
 
       bcrypt.compare(password, hashedPass, async function (err, bcryptRes) {
         if (err) {
@@ -409,26 +478,57 @@ app.post("/login", async (req, res) => {
           delete req.session;
           return res.redirect("/login");
         }
+
         if (bcryptRes) {
-          console.log("Passwords match");
           const userId = await db.getIdByUsername(login);
           req.session.user = { id: userId };
-          return res.redirect("/home"); // main chat view
-        } else {
-          console.log("Passwords do not match");
-          delete req.session;
-          return res.redirect("/login");
+          return res.redirect("/home");
         }
+
+        delete req.session;
+        return res.redirect("/login");
       });
     } catch (err) {
-
       console.log(err);
-      delete req.session
-      res.redirect('/login')
-    }  
+      delete req.session;
+      res.redirect("/login");
+    }
   }
 });
 
-server.listen(port, host, (req, res) => {
+io.on("connection", (socket) => {
+  console.log("a user connected");
+
+  socket.on("join_server_room", (serverId) => {
+    socket.join(`server_${serverId}`);
+    console.log("joined room:", serverId);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("user disconnected");
+  });
+
+  socket.on("chat message", async (msg) => {
+    try {
+      const isMember = await db.isMember(msg.serverId, msg.userId);
+
+      if (!isMember) return;
+
+      const msgId = await db.setChannelMessages(msg);
+      const msgInfo = await db.getChannelMessage(msgId.message_id);
+
+      io.to(`server_${msg.serverId}`).emit("chat message", msgInfo[0]);
+    } catch (err) {
+      console.error("Socket message error:", err);
+    }
+  });
+
+  socket.on("delete message", async (message_id) => {
+    await db.deleteMessage(message_id);
+    io.emit("delete message", message_id);
+  });
+});
+
+server.listen(port, host, () => {
   console.log(`Server running at http://${host}:${port}`);
 });

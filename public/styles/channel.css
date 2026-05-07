@@ -2,14 +2,19 @@
     height: 100%;
 }
 
+/* TOP SECTION */
+
 .top-section {
     height: 10%;
     display: flex;
     flex-flow: row nowrap;
     justify-content: space-between;
+    align-items: center;
 }
 
-.top-left, .directory, .profile-settings {
+.top-left,
+.directory,
+.profile-settings {
     width: 30%;
 }
 
@@ -18,8 +23,12 @@
 }
 
 .profile-settings {
+    display: flex;
+    flex-flow: row nowrap;
     justify-content: flex-end;
 }
+
+/* SMALL PROFILE */
 
 .small-profile {
     display: flex;
@@ -32,7 +41,8 @@
     background-color: #283848;
 }
 
-.small-profile .pfp, .small-profile .pfp img {
+.small-profile .pfp,
+.small-profile .pfp img {
     width: 40px;
     height: 40px;
     border-radius: 4px;
@@ -80,22 +90,16 @@
     color: gray;
 }
 
-.profile-settings {
-    display: flex;
-    flex-flow: row nowrap;
-}
-
-
-/* Bottom Section */
+/* BOTTOM SECTION */
 
 .bottom-section {
-    height: 90%;
-    display: flex;
-    flex-flow: row nowrap;
+    display: grid;
+    grid-template-columns: 160px 1fr 240px;
+    width: 100%;
+    min-height: calc(100vh - 90px);
 }
 
-
-/* Server / DM list */
+/* SERVER LIST */
 
 .list {
     width: 160px;
@@ -154,19 +158,99 @@
     background-color: #283848;
 }
 
+/* POSTS AREA */
 
-/* Chat */
-
-.posts {
-    width: 70%;
-    text-align: center;
-    align-content: center;
+.posts-area {
+    grid-column: 2;
+    width: 100%;
+    max-width: 720px;
+    margin: 40px auto;
+    padding: 0;
 }
 
-
-/* Member list */
+/* MEMBER LIST */
 
 .member-list {
-    width: 20%;
+    grid-column: 3;
+    width: 240px;
+    min-width: 240px;
     background-color: #283848;
+    padding: 20px 14px;
+    overflow-y: auto;
+}
+
+.member-list a {
+    color: white;
+    text-decoration: none;
+}
+
+.member {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.member:hover {
+    background: rgba(255,255,255,0.08);
+}
+
+.img-wrap {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+}
+
+.member .pfp {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.member .info {
+    min-width: 0;
+}
+
+.member .name {
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.member .bio {
+    font-size: 12px;
+    color: #cbd5e1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* FLOATING BUTTON */
+
+.create-post-btn {
+    position: fixed;
+    right: 270px;
+    bottom: 30px;
+
+    width: 60px;
+    height: 60px;
+
+    border-radius: 50%;
+    border: 0;
+
+    background: #8e44ad;
+    color: white;
+
+    font-size: 38px;
+    cursor: pointer;
+
+    box-shadow: 0 0 20px rgba(0,0,0,.3);
+
+    z-index: 100;
+}
+
+.create-post-btn:hover {
+    background: #9b59b6;
 }
