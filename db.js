@@ -329,6 +329,27 @@ const isMember = async (server_id, user_id) => {
   return rows.length > 0;
 };
 
+const isServerModerator = async (server_id, user_id) => {
+  const connection = await getConnection();
+
+  const sql = `
+    SELECT moderator
+    FROM member_list
+    WHERE server_id = ? 
+    AND user_id = ?
+    LIMIT 1
+  `;
+
+  const [rows] = await connection.execute(sql, [server_id, user_id]);
+  connection.release();
+
+  if (rows.length === 0) {
+    return false;
+  }
+
+  return rows[0].moderator === 1;
+};
+
 const getServerById = async (server_id) => {
   const connection = await getConnection();
 
@@ -381,7 +402,7 @@ const updateDisplayName = async (new_name, user_id) => {
   const sql = `UPDATE users 
               SET display_name = ? 
               WHERE user_id = ?
-              `
+              `;
   await connection.execute(sql, [new_name, user_id]);
   connection.release();
 };
@@ -403,28 +424,28 @@ const getMemberList = async (server_id) => {
               ON users.user_id = member_list.user_id
 
               WHERE server.server_id = ?
-              `
+              `;
   const [rows] = await connection.execute(sql, [server_id]);
   connection.release();
 
-  return rows
+  return rows;
 };
 
 const countMembers = async (server_id) => {
-  const connection = await getConnection()
+  const connection = await getConnection();
 
   const sql = `
               SELECT COUNT(*) 
               FROM member_list
               JOIN server ON server.server_id = member_list.server_id
               WHERE server.server_id = ?;
-              `
+              `;
 
-  const count = await connection.execute(sql, [server_id])
-  connection.release()
+  const count = await connection.execute(sql, [server_id]);
+  connection.release();
 
-  return count
-}
+  return count;
+};
 
 const upvotePost = async (post_id) => {
   const connection = await getConnection();
@@ -432,7 +453,7 @@ const upvotePost = async (post_id) => {
   const sql = `UPDATE posts 
               SET upvotes = upvotes + 1 
               WHERE post_id = ?
-              `
+              `;
   await connection.execute(sql, [post_id]);
   connection.release();
 };
@@ -443,7 +464,7 @@ const downvotePost = async (post_id) => {
   const sql = `UPDATE posts 
               SET downvotes = downvotes + 1 
               WHERE post_id = ?
-              `
+              `;
   await connection.execute(sql, [post_id]);
   connection.release();
 };
@@ -467,11 +488,11 @@ const getPosts = async (server_id) => {
               ON users.user_id = posts.user_id
 
               WHERE posts.server_id = ?
-              `
+              `;
   const [rows] = await connection.execute(sql, [server_id]);
   connection.release();
 
-  return rows
+  return rows;
 };
 
 export default {
@@ -496,4 +517,5 @@ export default {
   upvotePost,
   downvotePost,
   getPosts,
+  isServerModerator,
 };
