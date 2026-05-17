@@ -99,7 +99,7 @@
 
                             <% posts.forEach(post=> { %>
 
-                                <article class="post">
+                                <article class="post" id="<%= post.post_id %>">
 
                                     <div class="post-top">
 
@@ -175,25 +175,14 @@
                                             </div>
 
                                             <div class="actions">
+                                                <button class="vote up">▲</button>
+                                                
+                                                <% const score = (post.upvotes || 0) - (post.downvotes || 0) %>
+                                                <div class="score <%= score > 0 ? 'positive' : score < 0 ? 'negative' : 'neutral' %>">
+                                                    <%= score %>
+                                                </div>
 
-                                                <form method="post" action="/posts/<%= post.post_id %>/upvote"
-                                                    class="inline">
-
-                                                    <button class="vote up">
-                                                        ▲ <%= post.upvotes || 0 %>
-                                                    </button>
-
-                                                </form>
-
-                                                <form method="post" action="/posts/<%= post.post_id %>/downvote"
-                                                    class="inline">
-
-                                                    <button class="vote down">
-                                                        ▼ <%= post.downvotes || 0 %>
-                                                    </button>
-
-                                                </form>
-
+                                                <button class="vote down">▼</button>
                                             </div>
 
                                 </article>
@@ -262,10 +251,9 @@
                         <%- include("member_list", { data: members || [] }) %>
 
                     </div>
-
             </div>
-
         </div>
+        <script src="/socket.io/socket.io.js"></script>
 
         <script>
 
@@ -287,6 +275,39 @@
 
             });
 
+
+            // socket.io
+
+            let socket = io()
+            const serverId = '<%= serverId %>'
+            const userId = '<%= userId %>'
+            socket.emit('join_server_room', serverId)
+
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.vote.up')) {
+                    const postCard = e.target.closest('.post')
+
+                    socket.emit('post upvote', postCard.id, serverId, userId)
+                }
+                else if (e.target.closest('.vote.down')) {
+                    const postCard = e.target.closest('.post')
+
+                    socket.emit('post downvote', postCard.id, serverId, userId)
+                }
+
+            })
+
+            socket.on('post upvote', function(post_id, score) {
+                const post = document.getElementById(post_id)
+                post.querySelector('.score').textContent = score
+                score.className = `score ${score > 0 ? 'positive' : score < 0 ? 'negative' : 'neutral'}`
+            })
+
+            socket.on('post downvote', function(post_id, score) {
+                const post = document.getElementById(post_id)
+                post.querySelector('.score').textContent = score
+                score.className = `score ${score > 0 ? 'positive' : score < 0 ? 'negative' : 'neutral'}`
+            })        
         </script>
 
 </body>

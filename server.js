@@ -170,14 +170,16 @@ app.get("/server/:id", isLoggedIn, async (req, res) => {
         p.img,
         p.text_content,
         p.creation_date,
-        p.upvotes,
-        p.downvotes,
         u.username,
         u.display_name,
-        u.avatar_url
+        u.avatar_url,
+        SUM(pv.vote = 'upvote')   AS upvotes,
+        SUM(pv.vote = 'downvote') AS downvotes
       FROM posts p
       JOIN users u ON u.user_id = p.user_id
+      LEFT JOIN post_votes pv ON pv.post_id = p.post_id
       WHERE p.server_id = ?
+      GROUP BY p.post_id
       ORDER BY p.creation_date DESC
       `,
       [serverId],
@@ -229,6 +231,7 @@ app.get("/server/:id", isLoggedIn, async (req, res) => {
       comments,
       members,
       sessionUser,
+      userId,
       path: req.path,
     });
   } catch (err) {
@@ -312,56 +315,6 @@ app.post("/posts/:postId/comments", isLoggedIn, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send("Failed to comment");
-  }
-});
-
-app.post("/posts/:postId/upvote", isLoggedIn, async (req, res) => {
-  const postId = req.params.postId;
-
-  try {
-    const [posts] = await pool.query(
-      "SELECT server_id FROM posts WHERE post_id = ?",
-      [postId],
-    );
-
-    if (posts.length === 0) {
-      return res.redirect("/home");
-    }
-
-    await pool.query(
-      "UPDATE posts SET upvotes = upvotes + 1 WHERE post_id = ?",
-      [postId],
-    );
-
-    res.redirect(`/server/${posts[0].server_id}`);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Failed to upvote");
-  }
-});
-
-app.post("/posts/:postId/downvote", isLoggedIn, async (req, res) => {
-  const postId = req.params.postId;
-
-  try {
-    const [posts] = await pool.query(
-      "SELECT server_id FROM posts WHERE post_id = ?",
-      [postId],
-    );
-
-    if (posts.length === 0) {
-      return res.redirect("/home");
-    }
-
-    await pool.query(
-      "UPDATE posts SET downvotes = downvotes + 1 WHERE post_id = ?",
-      [postId],
-    );
-
-    res.redirect(`/server/${posts[0].server_id}`);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Failed to downvote");
   }
 });
 
@@ -503,19 +456,21 @@ io.on("connection", (socket) => {
     io.emit("delete message", messageId);
   });
 
-  socket.on("upvote", async (postId, serverId) => {
+  socket.on("post upvote", async (postId, serverId, userId) => {
     try {
-      await db.upvotePost(postId);
-      io.to(`server_${serverId}`).emit("post upvote", postId);
+      await db.votePost(postId, userId, 'upvote');
+      const postInfo = await db.getPost(postId)
+      io.to(`server_${serverId}`).emit("post upvote", postId, (postInfo[0].upvotes - postInfo[0].downvotes));
     } catch (err) {
       console.error("Socket upvote error:", err);
     }
   });
 
-  socket.on("downvote", async (postId, serverId) => {
+  socket.on("post downvote", async (postId, serverId, userId) => {
     try {
-      await db.downvotePost(postId);
-      io.to(`server_${serverId}`).emit("post downvote", postId);
+      await db.votePost(postId, userId, 'downvote');
+      const postInfo = await db.getPost(postId)
+      io.to(`server_${serverId}`).emit("post downvote", postId, (postInfo[0].upvotes - postInfo[0].downvotes));
     } catch (err) {
       console.error("Socket downvote error:", err);
     }

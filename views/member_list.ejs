@@ -17,7 +17,7 @@
                     </div>
 
                     <div class="bio">
-                        <%= member.bio ? member.bio.slice(0, 20) + "..." : "No bio yet" %>
+                        <%= member.bio > 17 ? member.bio.slice(0, 17) + '...' : member.bio || 'Bio' %>
                     </div>
 
                 </div>

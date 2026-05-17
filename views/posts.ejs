@@ -1,5 +1,6 @@
 <div class="posts-container">
     <% posts.forEach(post => { %>
+        <% console.log(post) %>
         <div class="post-card" id="<%= post.post_id %>">
             <div class="post-header">
                 <div class="post-content-body">
@@ -49,7 +50,7 @@
                     </button>
 
                     <div class="score">
-                        <%= post.upvotes - post.downvotes %>
+                        <%= (post.upvotes || 0) - (post.downvotes || 0) %>
                     </div>
 
                     <button type="button" class="vote-button downvote">

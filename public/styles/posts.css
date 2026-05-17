@@ -92,11 +92,15 @@
   transform: scale(1.08);
 }
 
-.vote.up {
+.score {
+  font-size: 20px;
+}
+
+.vote.up, .positive {
   color: #23a559;
 }
 
-.vote.down {
+.vote.down, .negative {
   color: #f23f43;
 }
 

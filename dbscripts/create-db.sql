@@ -27,7 +27,7 @@ CREATE TABLE users (
 	blacklist BOOLEAN NOT NULL,
 	status ENUM('online', 'offline', 'incognito') NOT NULL,
 	avatar_url VARCHAR(255) NOT NULL,
-	bio TEXT NOT NULL,
+	bio VARCHAR(500) NOT NULL,
 	reputation INT NOT NULL DEFAULT 0
 ) ENGINE=InnoDB;
 
