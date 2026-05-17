@@ -157,6 +157,8 @@ app.get("/server/:id", isLoggedIn, async (req, res) => {
       : sessionUserData;
 
     const joined = await db.isMember(serverId, userId);
+    const isModerator = await db.isServerModerator(serverId, userId);
+
     const joinedServers = await db.getJoinedServers(userId);
     const memberList = await db.getMemberList(serverId);
 
@@ -225,6 +227,7 @@ app.get("/server/:id", isLoggedIn, async (req, res) => {
       serverName: serverInfo.name,
       serverId,
       joined,
+      isModerator,
       joinedServers,
       memberList,
       posts,
