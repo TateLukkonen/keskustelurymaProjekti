@@ -511,36 +511,6 @@ const getPost = async (post_id) => {
   const [rows] = await connection.execute(sql, [post_id]);
   connection.release();
 
-  return rows;
-};
-
-const getPost = async (post_id) => {
-  const connection = await getConnection();
-
-  const sql = `
-              SELECT 
-                p.post_id,
-                p.server_id,
-                p.user_id,
-                p.title,
-                p.img,
-                p.text_content,
-                p.creation_date,
-                u.username,
-                u.display_name,
-                u.avatar_url,
-                SUM(pv.vote = 'upvote')   AS upvotes,
-                SUM(pv.vote = 'downvote') AS downvotes
-              FROM posts p
-              JOIN users u ON u.user_id = p.user_id
-              LEFT JOIN post_votes pv ON pv.post_id = p.post_id
-              WHERE p.post_id = ?
-              GROUP BY p.post_id
-              ORDER BY p.creation_date DESC
-              `
-  const [rows] = await connection.execute(sql, [post_id]);
-  connection.release();
-
   return rows
 };
 
