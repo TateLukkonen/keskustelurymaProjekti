@@ -531,6 +531,17 @@ img.post-image {
     transform: scale(1.05);
 }
 
+.member .member-delete-form {
+    opacity: 0;
+    pointer-events: none;
+    transition: 0.15s;
+}
+
+.member:hover .member-delete-form {
+    opacity: 1;
+    pointer-events: auto;
+}
+
 @media (max-width: 1100px) {
     .top-section {
         grid-template-columns: 230px minmax(0, 1fr) 230px;
