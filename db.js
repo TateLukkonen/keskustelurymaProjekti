@@ -537,4 +537,6 @@ export default {
   getPosts,
   isServerModerator,
   getPost,
+  kickMember,
+  banMember,
 };
