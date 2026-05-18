@@ -16,57 +16,43 @@
 <body>
     <%- include("header") %>
 
-
         <div class="content">
 
             <div class="top-section">
 
                 <div class="top-left">
-                    <a href="/home">HOME ICON</a>
+                    <a href="/home" class="home-link">
+                        <span class="home-icon">⌂</span>
+                        <span>Home</span>
+                    </a>
                 </div>
 
                 <div class="server-status">
-
                     <h2 class="server-title-top">
                         <%= serverName || "Server" %>
                     </h2>
 
                     <% if (!joined) { %>
-
                         <form method="post" action="/join_server">
                             <input type="hidden" name="server_id" value="<%= serverId %>">
-
-                            <button>
-                                Join Server
-                            </button>
+                            <button>Join Server</button>
                         </form>
 
-                        <p>
-                            You must join to post.
-                        </p>
-
+                        <p>You must join to post.</p>
                         <% } else { %>
-
-                            <p>
-                                You are a member ✔
-                            </p>
-
+                            <p>You are a member ✔</p>
                             <% } %>
-
                 </div>
 
                 <div class="profile-settings">
-
                     <div class="small-profile <%= sessionUser.status %>">
 
                         <div class="profile-left">
-
                             <div class="pfp">
                                 <img src="<%= sessionUser.avatar_url || '/uploads/default_icon.png' %>" alt="">
                             </div>
 
                             <div class="name-status">
-
                                 <span class="name">
                                     <%= sessionUser.display_name %>
                                 </span>
@@ -74,17 +60,12 @@
                                 <span class="status">
                                     <%= sessionUser.status %>
                                 </span>
-
                             </div>
-
                         </div>
 
-                        <a href="/user_settings" class="settings-btn">
-                            ⚙
-                        </a>
+                        <a href="/user_settings" class="settings-btn">⚙</a>
 
                     </div>
-
                 </div>
 
             </div>
@@ -101,89 +82,103 @@
 
                                 <article class="post" id="<%= post.post_id %>">
 
-                                    <div class="post-top">
-
-                                        <div>
-
-                                            <h2>
-                                                <%= post.title %>
-                                            </h2>
-
-                                            <p>
-                                                <%= post.text_content || "" %>
-                                            </p>
-
-                                        </div>
-
-                                        <div class="post-user">
-
-                                            <span>
-                                                <%= post.display_name || post.username %>
-                                            </span>
-
-                                            <img class="avatar"
-                                                src="<%= post.avatar_url || '/uploads/default_icon.png' %>" alt="">
-
-                                        </div>
-
-                                    </div>
-
-                                    <% if (post.img) { %>
-
-                                        <img class="post-image" src="<%= post.img %>" alt="Post image">
-
+                                    <% if (isModerator) { %>
+                                        <form method="post" action="/posts/<%= post.post_id %>/delete"
+                                            class="delete-form">
+                                            <button type="submit" class="delete-btn"
+                                                onclick="return confirm('Delete this post?')">
+                                                ×
+                                            </button>
+                                        </form>
                                         <% } %>
 
-                                            <div class="comments">
+                                            <div class="post-top">
 
-                                                <% comments .filter(comment=> comment.post_id === post.post_id)
-                                                    .forEach(comment => { %>
+                                                <div class="post-content-body">
+                                                    <h2>
+                                                        <%= post.title %>
+                                                    </h2>
 
-                                                    <div class="comment">
+                                                    <p>
+                                                        <%= post.text_content || "" %>
+                                                    </p>
+                                                </div>
 
-                                                        <p>
+                                                <div class="post-user">
+                                                    <span>
+                                                        <%= post.display_name || post.username %>
+                                                    </span>
 
-                                                            <strong>
-                                                                <%= comment.display_name || comment.username %>:
-                                                            </strong>
+                                                    <img class="avatar"
+                                                        src="<%= post.avatar_url || '/uploads/default_icon.png' %>"
+                                                        alt="">
+                                                </div>
 
-                                                            <%= comment.text_content %>
+                                            </div>
 
-                                                        </p>
+                                            <% if (post.img) { %>
+                                                <img class="post-image" src="<%= post.img %>" alt="Post image">
+                                                <% } %>
+
+                                                    <div class="comments">
+
+                                                        <% comments.filter(comment=> comment.post_id ===
+                                                            post.post_id).forEach(comment => { %>
+
+                                                            <div class="comment">
+
+                                                                <% if (isModerator) { %>
+                                                                    <form method="post"
+                                                                        action="/comments/<%= comment.comment_id %>/delete"
+                                                                        class="delete-form">
+                                                                        <input type="hidden" name="server_id"
+                                                                            value="<%= serverId %>">
+
+                                                                        <button type="submit" class="delete-btn"
+                                                                            onclick="return confirm('Delete this comment?')">
+                                                                            ×
+                                                                        </button>
+                                                                    </form>
+                                                                    <% } %>
+
+                                                                        <p>
+                                                                            <strong>
+                                                                                <%= comment.display_name ||
+                                                                                    comment.username %>:
+                                                                            </strong>
+
+                                                                            <%= comment.text_content %>
+                                                                        </p>
+
+                                                            </div>
+
+                                                            <% }) %>
+
+                                                                <% if (joined) { %>
+                                                                    <form method="post"
+                                                                        action="/posts/<%= post.post_id %>/comments"
+                                                                        class="comment-form">
+                                                                        <input name="text_content"
+                                                                            placeholder="Write a comment..." required>
+
+                                                                        <button>Comment</button>
+                                                                    </form>
+                                                                    <% } %>
 
                                                     </div>
 
-                                                    <% }) %>
+                                                    <div class="actions">
+                                                        <button class="vote up">▲</button>
 
-                                                        <% if (joined) { %>
+                                                        <% const score=(post.upvotes || 0) - (post.downvotes || 0) %>
 
-                                                            <form method="post"
-                                                                action="/posts/<%= post.post_id %>/comments"
-                                                                class="comment-form">
+                                                            <div
+                                                                class="score <%= score > 0 ? 'positive' : score < 0 ? 'negative' : 'neutral' %>">
+                                                                <%= score %>
+                                                            </div>
 
-                                                                <input name="text_content"
-                                                                    placeholder="Write a comment..." required>
-
-                                                                <button>
-                                                                    Comment
-                                                                </button>
-
-                                                            </form>
-
-                                                            <% } %>
-
-                                            </div>
-
-                                            <div class="actions">
-                                                <button class="vote up">▲</button>
-                                                
-                                                <% const score = (post.upvotes || 0) - (post.downvotes || 0) %>
-                                                <div class="score <%= score > 0 ? 'positive' : score < 0 ? 'negative' : 'neutral' %>">
-                                                    <%= score %>
-                                                </div>
-
-                                                <button class="vote down">▼</button>
-                                            </div>
+                                                            <button class="vote down">▼</button>
+                                                    </div>
 
                                 </article>
 
@@ -192,34 +187,23 @@
                         </section>
 
                         <% if (posts.length===0) { %>
-
-                            <p class="empty">
-                                No posts yet.
-                            </p>
-
+                            <p class="empty">No posts yet.</p>
                             <% } %>
 
                                 <% if (joined) { %>
 
-                                    <button class="create-post-btn" onclick="openPostModal()">
-                                        +
-                                    </button>
+                                    <button class="create-post-btn" onclick="openPostModal()">+</button>
 
                                     <div class="post-modal" id="postModal">
 
                                         <div class="post-modal-box">
 
-                                            <button class="close-modal" onclick="closePostModal()">
-                                                ×
-                                            </button>
+                                            <button class="close-modal" onclick="closePostModal()">×</button>
 
-                                            <h2>
-                                                Create Post
-                                            </h2>
+                                            <h2>Create Post</h2>
 
                                             <form method="post" action="/servers/<%= serverId %>/posts"
                                                 enctype="multipart/form-data">
-
                                                 <input name="title" placeholder="Post title" required>
 
                                                 <textarea name="text_content" placeholder="Write something..."
@@ -228,10 +212,7 @@
                                                 <input type="file" name="img"
                                                     accept="image/png,image/jpeg,image/webp,image/gif">
 
-                                                <button type="submit" class="submit-post-btn">
-                                                    Post
-                                                </button>
-
+                                                <button type="submit" class="submit-post-btn">Post</button>
                                             </form>
 
                                         </div>
@@ -243,20 +224,18 @@
                     </section>
 
                     <div class="member-list">
+                        <h3 class="member-list-title">Member List</h3>
 
-                        <h3 class="member-list-title">
-                            Member List
-                        </h3>
-
-                        <%- include("member_list", { data: members || [] }) %>
-
+                        <%- include("member_list", { data: members || [], isModerator, serverId, userId }) %>
                     </div>
+
             </div>
+
         </div>
+
         <script src="/socket.io/socket.io.js"></script>
 
         <script>
-
             function openPostModal() {
                 document.getElementById("postModal").style.display = "flex";
             }
@@ -266,48 +245,44 @@
             }
 
             window.addEventListener("click", function (e) {
-
                 const modal = document.getElementById("postModal");
 
                 if (e.target === modal) {
                     modal.style.display = "none";
                 }
-
             });
 
+            let socket = io();
+            const serverId = '<%= serverId %>';
+            const userId = '<%= userId %>';
 
-            // socket.io
+            socket.emit("join_server_room", serverId);
 
-            let socket = io()
-            const serverId = '<%= serverId %>'
-            const userId = '<%= userId %>'
-            socket.emit('join_server_room', serverId)
-
-            document.addEventListener('click', (e) => {
-                if (e.target.closest('.vote.up')) {
-                    const postCard = e.target.closest('.post')
-
-                    socket.emit('post upvote', postCard.id, serverId, userId)
+            document.addEventListener("click", (e) => {
+                if (e.target.closest(".vote.up")) {
+                    const postCard = e.target.closest(".post");
+                    socket.emit("post upvote", postCard.id, serverId, userId);
+                } else if (e.target.closest(".vote.down")) {
+                    const postCard = e.target.closest(".post");
+                    socket.emit("post downvote", postCard.id, serverId, userId);
                 }
-                else if (e.target.closest('.vote.down')) {
-                    const postCard = e.target.closest('.post')
+            });
 
-                    socket.emit('post downvote', postCard.id, serverId, userId)
-                }
+            socket.on("post upvote", function (post_id, score) {
+                const post = document.getElementById(post_id);
+                const scoreEl = post.querySelector(".score");
 
-            })
+                scoreEl.textContent = score;
+                scoreEl.className = `score ${score > 0 ? "positive" : score < 0 ? "negative" : "neutral"}`;
+            });
 
-            socket.on('post upvote', function(post_id, score) {
-                const post = document.getElementById(post_id)
-                post.querySelector('.score').textContent = score
-                score.className = `score ${score > 0 ? 'positive' : score < 0 ? 'negative' : 'neutral'}`
-            })
+            socket.on("post downvote", function (post_id, score) {
+                const post = document.getElementById(post_id);
+                const scoreEl = post.querySelector(".score");
 
-            socket.on('post downvote', function(post_id, score) {
-                const post = document.getElementById(post_id)
-                post.querySelector('.score').textContent = score
-                score.className = `score ${score > 0 ? 'positive' : score < 0 ? 'negative' : 'neutral'}`
-            })        
+                scoreEl.textContent = score;
+                scoreEl.className = `score ${score > 0 ? "positive" : score < 0 ? "negative" : "neutral"}`;
+            });
         </script>
 
 </body>

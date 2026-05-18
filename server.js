@@ -214,7 +214,9 @@ app.get("/server/:id", isLoggedIn, async (req, res) => {
         u.display_name AS name,
         u.avatar_url AS pfp,
         u.status,
-        u.bio
+        u.bio,
+        ml.owner,
+        ml.moderator
       FROM member_list ml
       JOIN users u ON u.user_id = ml.user_id
       WHERE ml.server_id = ?
@@ -483,6 +485,93 @@ io.on("connection", (socket) => {
     console.log("user disconnected");
   });
 });
+
+app.post("/posts/:postId/delete", isLoggedIn, async (req, res) => {
+  const postId = req.params.postId;
+  const userId = req.session.user.id;
+
+  try {
+    const [posts] = await pool.query(
+      "SELECT server_id FROM posts WHERE post_id = ?",
+      [postId],
+    );
+
+    if (posts.length === 0) {
+      return res.redirect("/home");
+    }
+
+    const serverId = posts[0].server_id;
+
+    const isModerator = await db.isServerModerator(serverId, userId);
+
+    if (!isModerator) {
+      return res.status(403).send("No permission");
+    }
+
+    await pool.query("DELETE FROM posts WHERE post_id = ?", [postId]);
+
+    res.redirect(`/server/${serverId}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Failed to delete post");
+  }
+});
+
+app.post("/comments/:commentId/delete", isLoggedIn, async (req, res) => {
+  const commentId = req.params.commentId;
+  const serverId = req.body.server_id;
+  const userId = req.session.user.id;
+
+  try {
+    const isModerator = await db.isServerModerator(serverId, userId);
+
+    if (!isModerator) {
+      return res.status(403).send("No permission");
+    }
+
+    await pool.query("DELETE FROM post_comments WHERE comment_id = ?", [
+      commentId,
+    ]);
+
+    res.redirect(`/server/${serverId}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Failed to delete comment");
+  }
+});
+
+app.post(
+  "/servers/:serverId/members/:memberId/delete",
+  isLoggedIn,
+  async (req, res) => {
+    const serverId = req.params.serverId;
+    const memberId = req.params.memberId;
+    const userId = req.session.user.id;
+
+    try {
+      const isModerator = await db.isServerModerator(serverId, userId);
+
+      if (!isModerator) {
+        return res.status(403).send("No permission");
+      }
+
+      await pool.query(
+        `
+      DELETE FROM member_list
+      WHERE server_id = ?
+      AND user_id = ?
+      AND owner = 0
+      `,
+        [serverId, memberId],
+      );
+
+      res.redirect(`/server/${serverId}`);
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Failed to remove member");
+    }
+  },
+);
 
 server.listen(port, host, () => {
   console.log(`Server running at http://${host}:${port}`);
