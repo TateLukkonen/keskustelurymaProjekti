@@ -514,35 +514,32 @@ const getPost = async (post_id) => {
   return rows;
 };
 
-const getPost = async (post_id) => {
+const kickMember = async (server_id, user_id) => {
   const connection = await getConnection();
 
   const sql = `
-              SELECT 
-                p.post_id,
-                p.server_id,
-                p.user_id,
-                p.title,
-                p.img,
-                p.text_content,
-                p.creation_date,
-                u.username,
-                u.display_name,
-                u.avatar_url,
-                SUM(pv.vote = 'upvote')   AS upvotes,
-                SUM(pv.vote = 'downvote') AS downvotes
-              FROM posts p
-              JOIN users u ON u.user_id = p.user_id
-              LEFT JOIN post_votes pv ON pv.post_id = p.post_id
-              WHERE p.post_id = ?
-              GROUP BY p.post_id
-              ORDER BY p.creation_date DESC
+              DELETE
+              FROM member_list
+              WHERE server_id = ?
+              AND user_id = ?
               `
-  const [rows] = await connection.execute(sql, [post_id]);
-  connection.release();
+  await connection.execute(sql, [server_id, user_id])
+  connection.release()
+}
 
-  return rows
-};
+const banMember = async (server_id, user_id) => {
+  const connection = await getConnection();
+
+  const sql = `
+              INSERT INTO ban_list (server_id, user_id, ban_expiry)
+              VALUES (?, ?, NULL)
+              ON DUPLICATE KEY UPDATE ban_expiry = VALUES(ban_expiry)
+              `
+  await connection.execute(sql, [server_id, user_id])
+  connection.release()
+}
+
+
 
 export default {
   getChannelMessages,
@@ -567,4 +564,6 @@ export default {
   getPosts,
   isServerModerator,
   getPost,
+  kickMember,
+  banMember,
 };

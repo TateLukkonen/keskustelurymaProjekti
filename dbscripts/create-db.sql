@@ -44,7 +44,9 @@ CREATE TABLE ban_list (
 	
 	FOREIGN KEY (user_id)
 	REFERENCES users (user_id)
-    ON DELETE CASCADE
+    ON DELETE CASCADE,
+
+	UNIQUE (server_id, user_id)
 ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS member_list;
