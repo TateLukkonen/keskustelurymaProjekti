@@ -158,6 +158,7 @@ app.get("/server/:id", isLoggedIn, async (req, res) => {
 
     const joined = await db.isMember(serverId, userId);
     const isModerator = await db.isServerModerator(serverId, userId);
+    const isOwner = await db.isServerOwner(serverId, userId);
 
     const joinedServers = await db.getJoinedServers(userId);
     const memberList = await db.getMemberList(serverId);
@@ -230,6 +231,7 @@ app.get("/server/:id", isLoggedIn, async (req, res) => {
       serverId,
       joined,
       isModerator,
+      isOwner,
       joinedServers,
       memberList,
       posts,
@@ -278,10 +280,10 @@ app.post(
 
       await pool.query(
         `
-      INSERT INTO posts 
-      (server_id, user_id, title, img, text_content, creation_date)
-      VALUES (?, ?, ?, ?, ?, NOW())
-      `,
+        INSERT INTO posts 
+        (server_id, user_id, title, img, text_content, creation_date)
+        VALUES (?, ?, ?, ?, ?, NOW())
+        `,
         [serverId, userId, req.body.title, img, req.body.text_content],
       );
 
@@ -463,9 +465,13 @@ io.on("connection", (socket) => {
 
   socket.on("post upvote", async (postId, serverId, userId) => {
     try {
-      await db.votePost(postId, userId, 'upvote');
-      const postInfo = await db.getPost(postId)
-      io.to(`server_${serverId}`).emit("post upvote", postId, (postInfo[0].upvotes - postInfo[0].downvotes));
+      await db.votePost(postId, userId, "upvote");
+      const postInfo = await db.getPost(postId);
+      io.to(`server_${serverId}`).emit(
+        "post upvote",
+        postId,
+        postInfo[0].upvotes - postInfo[0].downvotes,
+      );
     } catch (err) {
       console.error("Socket upvote error:", err);
     }
@@ -473,9 +479,13 @@ io.on("connection", (socket) => {
 
   socket.on("post downvote", async (postId, serverId, userId) => {
     try {
-      await db.votePost(postId, userId, 'downvote');
-      const postInfo = await db.getPost(postId)
-      io.to(`server_${serverId}`).emit("post downvote", postId, (postInfo[0].upvotes - postInfo[0].downvotes));
+      await db.votePost(postId, userId, "downvote");
+      const postInfo = await db.getPost(postId);
+      io.to(`server_${serverId}`).emit(
+        "post downvote",
+        postId,
+        postInfo[0].upvotes - postInfo[0].downvotes,
+      );
     } catch (err) {
       console.error("Socket downvote error:", err);
     }
@@ -501,7 +511,6 @@ app.post("/posts/:postId/delete", isLoggedIn, async (req, res) => {
     }
 
     const serverId = posts[0].server_id;
-
     const isModerator = await db.isServerModerator(serverId, userId);
 
     if (!isModerator) {
@@ -557,11 +566,11 @@ app.post(
 
       await pool.query(
         `
-      DELETE FROM member_list
-      WHERE server_id = ?
-      AND user_id = ?
-      AND owner = 0
-      `,
+        DELETE FROM member_list
+        WHERE server_id = ?
+        AND user_id = ?
+        AND owner = 0
+        `,
         [serverId, memberId],
       );
 
@@ -569,6 +578,126 @@ app.post(
     } catch (err) {
       console.error(err);
       res.status(500).send("Failed to remove member");
+    }
+  },
+);
+
+app.post(
+  "/servers/:serverId/members/:memberId/promote",
+  isLoggedIn,
+  async (req, res) => {
+    const serverId = req.params.serverId;
+    const memberId = req.params.memberId;
+    const userId = req.session.user.id;
+
+    try {
+      const isOwner = await db.isServerOwner(serverId, userId);
+
+      if (!isOwner) {
+        return res.status(403).send("Only owner can promote moderators");
+      }
+
+      await db.promoteMemberToModerator(serverId, memberId);
+
+      res.redirect(`/profile/${memberId}`);
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Failed to promote member");
+    }
+  },
+);
+
+app.get("/profile/:id", isLoggedIn, async (req, res) => {
+  const profileUserId = req.params.id;
+  const currentUserId = req.session.user.id;
+
+  try {
+    const [rows] = await pool.query(
+      `
+      SELECT 
+        user_id,
+        full_name,
+        username,
+        display_name,
+        email,
+        creation_date,
+        status,
+        avatar_url,
+        bio,
+        reputation
+      FROM users
+      WHERE user_id = ?
+      `,
+      [profileUserId],
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).send("User not found");
+    }
+
+    const [roles] = await pool.query(
+      `
+      SELECT
+        server.server_id,
+        server.name AS server_name,
+        member_list.owner,
+        member_list.moderator,
+        (
+          SELECT ml2.owner
+          FROM member_list ml2
+          WHERE ml2.server_id = server.server_id
+          AND ml2.user_id = ?
+          LIMIT 1
+        ) AS current_user_owner
+      FROM member_list
+      JOIN server ON server.server_id = member_list.server_id
+      WHERE member_list.user_id = ?
+      `,
+      [currentUserId, profileUserId],
+    );
+
+    res.render("profile", {
+      profileUser: rows[0],
+      roles,
+      currentUserId,
+      path: req.path,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Failed to load profile");
+  }
+});
+
+app.post(
+  "/servers/:serverId/members/:memberId/demote",
+  isLoggedIn,
+  async (req, res) => {
+    const serverId = req.params.serverId;
+    const memberId = req.params.memberId;
+    const userId = req.session.user.id;
+
+    try {
+      const isOwner = await db.isServerOwner(serverId, userId);
+
+      if (!isOwner) {
+        return res.status(403).send("Only owner can demote moderators");
+      }
+
+      await pool.query(
+        `
+        UPDATE member_list
+        SET moderator = 0
+        WHERE server_id = ?
+        AND user_id = ?
+        AND owner = 0
+        `,
+        [serverId, memberId],
+      );
+
+      res.redirect(`/profile/${memberId}`);
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Failed to demote member");
     }
   },
 );
