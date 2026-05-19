@@ -95,6 +95,26 @@ app.get("/home", isLoggedIn, async (req, res) => {
   }
 });
 
+app.get("/profile_page/:id", isLoggedIn, async (req, res) => {
+  if (req.session.user.id === req.params.id) {
+    res.redirect('/home')
+  }
+  else {
+    try {
+      const userInfo = await db.getMember(req.params.id)
+      const servers = await db.getJoinedServers(req.params.id);
+
+      res.render("profile_page", {
+        user: userInfo,
+        servers: servers,
+      });
+    } catch (err) {
+      console.error("Database error:", err);
+      res.status(500).send("Internal Server Error");
+    }
+  }
+});
+
 app.get("/main_page", isLoggedIn, async (req, res) => {
   try {
     const channelMessages = await db.getChannelMessages(1);
@@ -433,6 +453,13 @@ app.post("/login", async (req, res) => {
     delete req.session;
     res.redirect("/login");
   }
+});
+
+app.post('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) console.error(err);
+    res.redirect('/login');
+  });
 });
 
 io.on("connection", (socket) => {

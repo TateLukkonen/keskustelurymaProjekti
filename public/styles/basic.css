@@ -15,11 +15,21 @@ header {
   border-bottom: 4px solid #67327e;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-around;
   color: #67327e;
   user-select: none;
   box-sizing: border-box;
   font-family: "Nunito", sans-serif;
+}
+
+header a {
+  width: 30%;
+  text-align: center;
+}
+
+header form {
+  width: 30%;
+  text-align: end;
 }
 
 header h1 {

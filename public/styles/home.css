@@ -1,3 +1,16 @@
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  box-sizing: border-box;
+  font-family: Nunito;
+}
+
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
 body {
   margin: 0;
   font-family: Arial, sans-serif;
@@ -33,6 +46,54 @@ header {
 .server-toggle button,
 .server-card .icon {
   background: #283848;
+}
+
+.bio {
+  position: relative;
+}
+
+.bio textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+
+  color: white;
+  font-size: 16px;
+  font-family: inherit;
+
+  padding: 0;
+  margin-top: 10px;
+
+  padding-bottom: 50px;
+}
+
+.bio button {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+
+  width: fit-content;
+
+  background: #1abc9c;
+  color: white;
+
+  border: none;
+  border-radius: 8px;
+
+  padding: 8px 14px;
+
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.bio button:hover {
+  background: #1abc9c;
+}
+
+.bio textarea::placeholder {
+  color: #aaa;
 }
 
 .bio,
@@ -131,6 +192,7 @@ header {
   grid-template-columns: repeat(3, 1fr);
   gap: 15px;
 }
+
 .server-card {
   background: #fdfefe;
   color: black;
@@ -175,4 +237,74 @@ header {
 .incognito {
   background: gray;
   outline: 3px solid #95a5a6;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 15px;
+    gap: 20px;
+  }
+
+  .top-section {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 20px;
+    height: auto;
+  }
+
+  .top-section > div,
+  .profile-center,
+  .bio,
+  .left-info {
+    width: 95%;
+  }
+
+  .bio {
+    order: -1;
+  }
+
+  .bio,
+  .left-info {
+    min-height: auto;
+  }
+
+  .profile-center {
+    text-align: center;
+  }
+
+  .profile-pic img {
+    width: 140px;
+    height: 140px;
+  }
+
+  .servers {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .server-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .server-toggle {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .server-toggle button {
+    width: 100%;
+    margin: 0;
+  }
+
+  .create-server-btn {
+    width: 100%;
+    text-align: center;
+    display: block;
+    box-sizing: border-box;
+  }
 }

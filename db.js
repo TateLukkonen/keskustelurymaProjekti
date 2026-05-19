@@ -107,8 +107,13 @@ export async function createServer(data) {
   const connection = await getConnection();
 
   const sql = `
+<<<<<<< HEAD
+    INSERT INTO server (name, short_name, private, server_link, invite_link, creation_date, server_picture_irl)
+    VALUES (?, ?, ?, ?, ?, NOW(), ?)
+=======
     INSERT INTO server (name, short_name, private, server_link, invite_link, server_picture_url, creation_date)
     VALUES (?, ?, ?, ?, ?, ?, NOW())
+>>>>>>> f3939aa2602c593459b8cd312f2739c1b05b1fe3
   `;
 
   const [result] = await connection.execute(sql, [
@@ -117,7 +122,11 @@ export async function createServer(data) {
     data.private,
     data.server_link,
     data.invite_link,
+<<<<<<< HEAD
+    data.server_picture_link,
+=======
     data.server_picture_url,
+>>>>>>> f3939aa2602c593459b8cd312f2739c1b05b1fe3
   ]);
 
   const serverId = result.insertId;
@@ -168,6 +177,35 @@ export async function getServers() {
 
   return rows;
 }
+
+const getJoinedServers = async (user_id) => {
+  const connection = await getConnection();
+
+  const sql = `
+    SELECT 
+      member_list.server_id, 
+      member_list.user_id,
+      server.server_id,
+      server.name,
+      server.short_name,
+      server.private,
+      server.invite_link,
+      server.server_link,
+      server.creation_date,
+      server.server_picture_url
+    FROM member_list
+    JOIN server 
+      ON server.server_id = member_list.server_id
+    JOIN users 
+      ON users.user_id = member_list.user_id
+    WHERE users.user_id = ?
+  `;
+
+  const [rows] = await connection.execute(sql, [user_id]);
+  connection.release();
+
+  return rows;
+};
 
 const registerAccount = async (
   full_name,
@@ -443,30 +481,6 @@ const getServerById = async (server_id) => {
   return rows[0];
 };
 
-const getJoinedServers = async (user_id) => {
-  const connection = await getConnection();
-
-  const sql = `
-    SELECT 
-      member_list.server_id, 
-      member_list.user_id,
-      server.name,
-      server.short_name,
-      server.server_picture_url
-    FROM member_list
-    JOIN server 
-      ON server.server_id = member_list.server_id
-    JOIN users 
-      ON users.user_id = member_list.user_id
-    WHERE users.user_id = ?
-  `;
-
-  const [rows] = await connection.execute(sql, [user_id]);
-  connection.release();
-
-  return rows;
-};
-
 const updateDisplayName = async (new_name, user_id) => {
   const connection = await getConnection();
 
@@ -594,6 +608,20 @@ const getPost = async (post_id) => {
   return rows;
 };
 
+const getMember = async (user_id) => {
+  const connection = await getConnection()
+
+  const sql = `
+      SELECT *
+      FROM users
+      WHERE user_id = ?
+      `
+  const [info] = await connection.execute(sql, [user_id])
+  connection.release()
+
+  return info[0]
+}
+
 export default {
   getChannelMessages,
   getChannelMessage,
@@ -619,4 +647,5 @@ export default {
   isServerOwner,
   promoteMemberToModerator,
   getPost,
+  getMember
 };
