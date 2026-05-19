@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <title>Home</title>
 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
     <link rel="stylesheet" href="/styles/home.css">
     <link rel="stylesheet" href="/styles/basic.css">
 </head>
@@ -23,10 +26,14 @@
                     Display name: <%= user.display_name %>
                 </p>
 
-            <form action="/update_display_name" method="POST">
-                <input type="text" name="display_name" placeholder="Edit display name">
-                <button type="submit">Save changes</button>
-            </form>
+                <form action="/update_display_name" method="POST">
+                    <input 
+                        type="text" 
+                        name="display_name" 
+                        placeholder="Edit display name"
+                    >
+                    <button type="submit">Save changes</button>
+                </form>
 
                 <div class="status">
                     <span>Status:</span>
@@ -41,15 +48,29 @@
                 <h4><%= user.username %></h4>
 
                 <div class="profile-pic">
-                    <img src="<%= user.avatar_url || '/uploads/default_icon.png' %>" alt="PFP">
+                    <img 
+                        src="<%= user.avatar_url || '/uploads/default_icon.png' %>" 
+                        alt="PFP"
+                    >
                 </div>
 
             </div>
 
             <div class="bio">
-                <h3>Bio</h3>
-                <p><%= user.bio || "No bio yet..." %></p>
-            </div>
+    <h3>Bio</h3>
+
+    <p><%= user.bio || "No bio yet..." %></p>
+
+    <form action="/update_bio" method="POST">
+        <textarea
+            name="bio"
+            placeholder="Write your bio here..."
+            rows="4"
+        ><%= user.bio || "" %></textarea>
+
+        <button type="submit">Save Bio</button>
+    </form>
+</div>
 
         </section>
 
