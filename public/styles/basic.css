@@ -18,6 +18,7 @@ header {
   color: #67327e;
   user-select: none;
   box-sizing: border-box;
+  font-family: "Nunito", sans-serif;
 }
 
 header h1 {
@@ -42,6 +43,6 @@ a {
 }
 
 button {
-  font-family: inherit;
+  font-family: "Nunito", sans-serif;
   font-size: 16px;
 }
