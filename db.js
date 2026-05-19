@@ -107,8 +107,8 @@ export async function createServer(data) {
   const connection = await getConnection();
 
   const sql = `
-    INSERT INTO server (name, short_name, private, server_link, invite_link, creation_date)
-    VALUES (?, ?, ?, ?, ?, NOW())
+    INSERT INTO server (name, short_name, private, server_link, invite_link, server_picture_url, creation_date)
+    VALUES (?, ?, ?, ?, ?, ?, NOW())
   `;
 
   const [result] = await connection.execute(sql, [
@@ -117,6 +117,7 @@ export async function createServer(data) {
     data.private,
     data.server_link,
     data.invite_link,
+    data.server_picture_url,
   ]);
 
   const serverId = result.insertId;
