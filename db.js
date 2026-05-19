@@ -122,11 +122,7 @@ export async function createServer(data) {
     data.private,
     data.server_link,
     data.invite_link,
-<<<<<<< HEAD
-    data.server_picture_link,
-=======
     data.server_picture_url,
->>>>>>> f3939aa2602c593459b8cd312f2739c1b05b1fe3
   ]);
 
   const serverId = result.insertId;
@@ -609,18 +605,18 @@ const getPost = async (post_id) => {
 };
 
 const getMember = async (user_id) => {
-  const connection = await getConnection()
+  const connection = await getConnection();
 
   const sql = `
       SELECT *
       FROM users
       WHERE user_id = ?
-      `
-  const [info] = await connection.execute(sql, [user_id])
-  connection.release()
+      `;
+  const [info] = await connection.execute(sql, [user_id]);
+  connection.release();
 
-  return info[0]
-}
+  return info[0];
+};
 
 export default {
   getChannelMessages,
@@ -647,5 +643,5 @@ export default {
   isServerOwner,
   promoteMemberToModerator,
   getPost,
-  getMember
+  getMember,
 };
