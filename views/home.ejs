@@ -20,20 +20,18 @@
         <section class="top-section">
 
             <div class="left-info">
-                <h2><%= user.username %></h2>
+                <h2>Username: @<%= user.username %></h2>
 
-                <p class="display-name">
-                    Display name: <%= user.display_name %>
-                </p>
+                <div>
+                    <p class="display-name">
+                        Display name: 
+                    </p>
 
-                <form action="/update_display_name" method="POST">
-                    <input 
-                        type="text" 
-                        name="display_name" 
-                        placeholder="Edit display name"
-                    >
-                    <button type="submit">Save changes</button>
-                </form>
+                    <form action="/update_display_name" method="POST">
+                        <input type="text" name="display_name" placeholder="<%= user.display_name %>">
+                        <button type="submit">Save changes</button>
+                    </form>
+                </div>
 
                 <div class="status">
                     <span>Status:</span>
