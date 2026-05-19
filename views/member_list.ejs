@@ -1,15 +1,47 @@
-<div class="member-list">
-    <% for (m of data) { %>
-        <a href="#">
-            <div class="member">
+<div class="member-list-content">
+
+    <% data.forEach(member=> { %>
+
+        <div class="member">
+
+            <a href="/profile/<%= member.user_id %>" class="member-link">
+
                 <div class="img-wrap">
-                    <img class="pfp <%= m.status %>" src="<%= m.pfp %>" alt="<%= m.name %>'s profile picture">
+                    <img class="pfp" src="<%= member.pfp || '/uploads/default_icon.png' %>" alt="<%= member.name %>">
                 </div>
+
                 <div class="info">
-                    <div class="name"><%= m.name %></div>
-                    <div class="bio"><%= m.bio.slice(0, 20) + '...' %></div>
+
+                    <div class="name">
+                        <%= member.name %>
+
+                            <% if (member.owner) { %>
+                                <span>Owner</span>
+                                <% } else if (member.moderator) { %>
+                                    <span>Mod</span>
+                                    <% } %>
+                    </div>
+
+                    <div class="bio">
+                        <%= member.bio && member.bio.length> 17 ? member.bio.slice(0, 17) + '...' : member.bio || 'Bio'
+                            %>
+                    </div>
+
                 </div>
-            </div>
-        </a>
-    <% } %>
+
+            </a>
+
+            <% if (isModerator && !member.owner && member.user_id !=userId) { %>
+                <form method="post" action="/servers/<%= serverId %>/members/<%= member.user_id %>/delete"
+                    class="member-delete-form">
+                    <button type="submit" class="kick-btn" onclick="return confirm('Kick this member?')">
+                        Kick
+                    </button>
+                </form>
+                <% } %>
+
+        </div>
+
+        <% }) %>
+
 </div>

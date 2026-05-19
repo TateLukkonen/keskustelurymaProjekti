@@ -1,4 +1,3 @@
-// Imports
 import express from "express";
 import session from "express-session";
 import mysql from "mysql2/promise";
@@ -7,39 +6,47 @@ import bcrypt from "bcrypt";
 import http from "node:http";
 import { Server } from "socket.io";
 import crypto from "node:crypto";
+import { fileURLToPath } from "node:url";
+import multer from "multer";
 
 import config from "./config.json" with { type: "json" };
 import dbconfig from "./dbconfig.json" with { type: "json" };
 import db from "./db.js";
-import { fileURLToPath } from "node:url";
-import multer from "multer";
 
-// RegEx
 const regEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Constants
 const { host, port } = config;
 
-// Database information
-const dbHost = dbconfig.host;
-const dbName = dbconfig.database;
-const dbUser = dbconfig.user;
-const dbPwd = dbconfig.password;
-
 const app = express();
-
 const server = http.createServer(app);
 const io = new Server(server);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Server configuration
+const pool = mysql.createPool({
+  host: dbconfig.host,
+  user: dbconfig.user,
+  password: dbconfig.password,
+  database: dbconfig.database,
+});
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+const upload = multer({ storage });
+
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// Static
 app.use(express.urlencoded({ extended: true }));
+
 app.use(
   session({
     secret: "supersecretkey",
@@ -51,20 +58,16 @@ app.use(
 
 app.use(express.static("public"));
 app.use("/styles", express.static("public/styles"));
-
-// uploads folder for profile pictures
 app.use("/uploads", express.static("uploads"));
 
-// Functions
 function isLoggedIn(req, res, next) {
   if (!req.session.user) {
     return res.redirect("/login");
-  } else {
-    next();
   }
+
+  next();
 }
 
-// Paths
 app.get("/", isLoggedIn, (req, res) => {
   res.redirect("/home");
 });
@@ -73,8 +76,49 @@ app.get("/login", (req, res) => {
   res.render("login", { path: req.path });
 });
 
-app.get("/create_server_settings", isLoggedIn, (req, res) => {
-  res.render("create_server_settings", { path: req.path });
+app.get("/register", (req, res) => {
+  res.render("register");
+});
+
+app.get("/home", isLoggedIn, async (req, res) => {
+  try {
+    const sessionUser = await db.getCurrentSessionUser(req.session.user.id);
+    const servers = await db.getServers();
+
+    res.render("home", {
+      user: sessionUser[0],
+      servers,
+    });
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+app.get("/main_page", isLoggedIn, async (req, res) => {
+  try {
+    const channelMessages = await db.getChannelMessages(1);
+    const servers = await db.getServers();
+    const sessionUser = await db.getCurrentSessionUser(req.session.user.id);
+
+    res.render("main_page", {
+      channelMessages,
+      servers,
+      sessionUser: sessionUser[0],
+      path: req.path,
+    });
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+app.get("/chat", isLoggedIn, (req, res) => {
+  res.render("chat", { path: req.path });
+});
+
+app.get("/posts", isLoggedIn, (req, res) => {
+  res.render("posts", { path: req.path });
 });
 
 app.get("/servers", isLoggedIn, async (req, res) => {
@@ -91,106 +135,110 @@ app.get("/servers", isLoggedIn, async (req, res) => {
   }
 });
 
-app.get("/posts", isLoggedIn, (req, res) => {
-  res.render("posts", { path: req.path });
-});
-app.get("/register", (req, res) => {
-  res.render("register");
-});
-
-//  GET METHODS
-app.get("/main_page", isLoggedIn, async (req, res) => {
-  let connection;
-  try {
-    connection = await mysql.createConnection({
-      host: dbHost,
-      user: dbUser,
-      password: dbPwd,
-      database: dbName,
-    });
-
-    const channelMsg = await db.getChannelMessages(1);
-    const servers = await db.getServers();
-    const sessionUser = await db.getCurrentSessionUser(req.session.user.id);
-
-    res.render("main_page", {
-      channelMessages: channelMsg,
-      servers: servers,
-      sessionUser: sessionUser[0],
-      path: req.path,
-    });
-  } catch (err) {
-    console.error("Database error: " + err);
-    res.status(500).send("Internal Server Error");
-  }
-  if (connection) {
-    try {
-      await connection.end();
-    } catch (closeError) {
-      console.error("Error closing connection:", closeError);
-    }
-  }
-});
-
-app.get("/home", isLoggedIn, async (req, res) => {
-  let connection;
-  try {
-    connection = await mysql.createConnection({
-      host: dbHost,
-      user: dbUser,
-      password: dbPwd,
-      database: dbName,
-    });
-
-    const sessionUser = await db.getCurrentSessionUser(req.session.user.id);
-    console.log("sessionUser:", sessionUser);
-    const serversList = await db.getServers();
-
-    res.render("home", {
-      user: sessionUser[0],
-      servers: serversList,
-    });
-  } catch (err) {
-    console.error("Database error: " + err);
-    res.status(500).send("Internal Server Error");
-  }
-});
-
-// ... muiden app.get-reittien jatkoksi
-app.get("/chat", isLoggedIn, (req, res) => {
-  res.render("chat", { path: req.path });
+app.get("/create_server_settings", isLoggedIn, (req, res) => {
+  res.render("create_server_settings", { path: req.path });
 });
 
 app.get("/server/:id", isLoggedIn, async (req, res) => {
   const serverId = req.params.id;
+  const userId = req.session.user.id;
 
   try {
-    const server = await db.getServerById(serverId);
+    const serverData = await db.getServerById(serverId);
+    const serverInfo = Array.isArray(serverData) ? serverData[0] : serverData;
 
-    if (!server) {
+    if (!serverInfo) {
       return res.status(404).send("Server not found");
     }
 
-    console.log("Server ID:", serverId);
-
-    if (!serverId) {
-      return res.status(400).send("Server ID missing");
-    }
-
-    const userId = req.session.user.id;
-
-    const channelMessages = await db.getChannelMessages(serverId); // gotta change to posts on db level
-    const sessionUser = await db.getCurrentSessionUser(userId);
-    const joinedServers = await db.getJoinedServers(userId)
+    const sessionUserData = await db.getCurrentSessionUser(userId);
+    const sessionUser = Array.isArray(sessionUserData)
+      ? sessionUserData[0]
+      : sessionUserData;
 
     const joined = await db.isMember(serverId, userId);
+    const isModerator = await db.isServerModerator(serverId, userId);
+    const isOwner = await db.isServerOwner(serverId, userId);
+
+    const joinedServers = await db.getJoinedServers(userId);
+    const memberList = await db.getMemberList(serverId);
+
+    const [posts] = await pool.query(
+      `
+      SELECT 
+        p.post_id,
+        p.server_id,
+        p.user_id,
+        p.title,
+        p.img,
+        p.text_content,
+        p.creation_date,
+        u.username,
+        u.display_name,
+        u.avatar_url,
+        SUM(pv.vote = 'upvote')   AS upvotes,
+        SUM(pv.vote = 'downvote') AS downvotes
+      FROM posts p
+      JOIN users u ON u.user_id = p.user_id
+      LEFT JOIN post_votes pv ON pv.post_id = p.post_id
+      WHERE p.server_id = ?
+      GROUP BY p.post_id
+      ORDER BY p.creation_date DESC
+      `,
+      [serverId],
+    );
+
+    const [comments] = await pool.query(
+      `
+      SELECT 
+        pc.comment_id,
+        pc.post_id,
+        pc.user_id,
+        pc.text_content,
+        pc.creation_date,
+        u.username,
+        u.display_name,
+        u.avatar_url
+      FROM post_comments pc
+      JOIN users u ON u.user_id = pc.user_id
+      JOIN posts p ON p.post_id = pc.post_id
+      WHERE p.server_id = ?
+      ORDER BY pc.creation_date ASC
+      `,
+      [serverId],
+    );
+
+    const [members] = await pool.query(
+      `
+      SELECT 
+        u.user_id,
+        u.display_name AS name,
+        u.avatar_url AS pfp,
+        u.status,
+        u.bio,
+        ml.owner,
+        ml.moderator
+      FROM member_list ml
+      JOIN users u ON u.user_id = ml.user_id
+      WHERE ml.server_id = ?
+      ORDER BY u.display_name
+      `,
+      [serverId],
+    );
 
     res.render("server", {
-      channelMessages, // change to posts after
-      sessionUser: sessionUser[0],
+      serverName: serverInfo.name,
       serverId,
       joined,
+      isModerator,
+      isOwner,
       joinedServers,
+      memberList,
+      posts,
+      comments,
+      members,
+      sessionUser,
+      userId,
       path: req.path,
     });
   } catch (err) {
@@ -199,12 +247,200 @@ app.get("/server/:id", isLoggedIn, async (req, res) => {
   }
 });
 
-// Socket.IO events
+app.post("/join_server", isLoggedIn, async (req, res) => {
+  try {
+    const serverId = req.body.server_id;
+    const userId = req.session.user.id;
+
+    await db.joinServer(serverId, userId);
+
+    res.redirect(`/server/${serverId}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Failed to join server");
+  }
+});
+
+app.post(
+  "/servers/:serverId/posts",
+  isLoggedIn,
+  upload.single("img"),
+  async (req, res) => {
+    const serverId = req.params.serverId;
+    const userId = req.session.user.id;
+
+    try {
+      const joined = await db.isMember(serverId, userId);
+
+      if (!joined) {
+        return res.redirect(`/server/${serverId}`);
+      }
+
+      const img = req.file ? `/uploads/${req.file.filename}` : null;
+
+      await pool.query(
+        `
+        INSERT INTO posts 
+        (server_id, user_id, title, img, text_content, creation_date)
+        VALUES (?, ?, ?, ?, ?, NOW())
+        `,
+        [serverId, userId, req.body.title, img, req.body.text_content],
+      );
+
+      res.redirect(`/server/${serverId}`);
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Failed to create post");
+    }
+  },
+);
+
+app.post("/posts/:postId/comments", isLoggedIn, async (req, res) => {
+  const postId = req.params.postId;
+  const userId = req.session.user.id;
+
+  try {
+    const [posts] = await pool.query(
+      "SELECT server_id FROM posts WHERE post_id = ?",
+      [postId],
+    );
+
+    if (posts.length === 0) {
+      return res.redirect("/home");
+    }
+
+    await pool.query(
+      `
+      INSERT INTO post_comments
+      (post_id, user_id, text_content, creation_date)
+      VALUES (?, ?, ?, NOW())
+      `,
+      [postId, userId, req.body.text_content],
+    );
+
+    res.redirect(`/server/${posts[0].server_id}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Failed to comment");
+  }
+});
+
+app.post("/update_display_name", isLoggedIn, async (req, res) => {
+  try {
+    const newName = req.body.display_name;
+    const userId = req.session.user.id;
+
+    await db.updateDisplayName(newName, userId);
+
+    res.redirect("/home");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error changing display name");
+  }
+});
+
+app.post("/register", upload.single("pfp"), async (req, res) => {
+  try {
+    const { full_name, username, password, display_name, email, bio } =
+      req.body;
+
+    const pfpPath = req.file
+      ? `/uploads/${req.file.filename}`
+      : "/uploads/default_icon.png";
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await db.registerAccount(
+      full_name,
+      username,
+      display_name,
+      email,
+      hashedPassword,
+      false,
+      false,
+      "offline",
+      pfpPath,
+      bio,
+    );
+
+    res.redirect("/login");
+  } catch (err) {
+    console.error("User registration failed:", err);
+    res.redirect("/register");
+  }
+});
+
+app.post(
+  "/create_server",
+  isLoggedIn,
+  upload.single("pfp"),
+  async (req, res) => {
+    try {
+      const pfpPath = req.file
+        ? `/uploads/${req.file.filename}`
+        : "/uploads/default_icon.png";
+
+      const serverLink = crypto.randomBytes(8).toString("hex");
+      const isPrivate = req.body.pub_priv === "private_choice" ? 1 : 0;
+      const inviteLink = isPrivate
+        ? crypto.randomBytes(8).toString("hex")
+        : null;
+
+      const data = {
+        name: req.body.server_name,
+        short_name: req.body.short_name,
+        server_picture_url: pfpPath,
+        private: isPrivate,
+        server_link: serverLink,
+        invite_link: inviteLink,
+        owner: req.session.user.id,
+      };
+
+      await db.createServer(data);
+
+      res.redirect("/home");
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Error creating server");
+    }
+  },
+);
+
+app.post("/login", async (req, res) => {
+  const login = req.body.login;
+  const password = req.body.password;
+
+  try {
+    const hashedPass = regEmail.test(login)
+      ? await db.attemptLogin(false, login, password)
+      : await db.attemptLogin(login, false, password);
+
+    bcrypt.compare(password, hashedPass, async (err, bcryptResult) => {
+      if (err || !bcryptResult) {
+        delete req.session;
+        return res.redirect("/login");
+      }
+
+      const userId = regEmail.test(login)
+        ? await db.getIdByEmail(login)
+        : await db.getIdByUsername(login);
+
+      req.session.user = { id: userId };
+      res.redirect("/home");
+    });
+  } catch (err) {
+    console.error(err);
+    delete req.session;
+    res.redirect("/login");
+  }
+});
 
 io.on("connection", (socket) => {
   console.log("a user connected");
-  socket.on("disconnect", () => {
-    console.log("user disconnected");
+
+  socket.on("join_server_room", (serverId) => {
+    socket.join(`server_${serverId}`);
+    console.log("joined room:", serverId);
   });
 
   socket.on("chat message", async (msg) => {
@@ -222,223 +458,250 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("delete message", async (message_id) => {
-    await db.deleteMessage(message_id);
-    io.emit("delete message", message_id);
+  socket.on("delete message", async (messageId) => {
+    await db.deleteMessage(messageId);
+    io.emit("delete message", messageId);
+  });
+
+  socket.on("post upvote", async (postId, serverId, userId) => {
+    try {
+      await db.votePost(postId, userId, "upvote");
+      const postInfo = await db.getPost(postId);
+      io.to(`server_${serverId}`).emit(
+        "post upvote",
+        postId,
+        postInfo[0].upvotes - postInfo[0].downvotes,
+      );
+    } catch (err) {
+      console.error("Socket upvote error:", err);
+    }
+  });
+
+  socket.on("post downvote", async (postId, serverId, userId) => {
+    try {
+      await db.votePost(postId, userId, "downvote");
+      const postInfo = await db.getPost(postId);
+      io.to(`server_${serverId}`).emit(
+        "post downvote",
+        postId,
+        postInfo[0].upvotes - postInfo[0].downvotes,
+      );
+    } catch (err) {
+      console.error("Socket downvote error:", err);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    console.log("user disconnected");
   });
 });
 
-io.on("connection", (socket) => {
-  socket.on("join_server_room", (serverId) => {
-    socket.join(`server_${serverId}`);
-    console.log("joined room:", serverId);
-  });
-});
+app.post("/posts/:postId/delete", isLoggedIn, async (req, res) => {
+  const postId = req.params.postId;
+  const userId = req.session.user.id;
 
-// POST METHODS
-
-app.post("/join_server", isLoggedIn, async (req, res) => {
   try {
-    const serverId = req.body.server_id;
-    const userId = req.session.user.id;
-
-    await db.joinServer(serverId, userId);
-
-    res.redirect(`/channel/${serverId}`);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Failed to join server");
-  }
-});
-
-app.post('/update_display_name', isLoggedIn, async (req, res)  => {
-  try {
-    const newName = req.body.display_name
-    const userId = req.session.user.id;
-
-    await db.updateDisplayName(newName, userId);
-
-    res.redirect(`/home`);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error changing display name of user: ", userId);
-  }
-})
-
-/*
-app.post('/main_page_send_message', async (req, res) => {
-  const message = req.body.message
-  
-  await db.setChannelMessages(message)
-  
-  res.redirect('/main_page')
-  })
-  
-  app.post('/delete_message', async (req, res) => {
-    const message_id = req.body.message_id
-    
-    await db.deleteMessage(message_id)
-    
-    res.redirect('/main_page')
-    })
-    */
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/");
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
-
-const upload = multer({ storage });
-
-app.post("/register", upload.single("pfp"), async (req, res) => {
-  try {
-    const { full_name, username, password, display_name, email, bio } =
-      req.body;
-
-    const pfp_path = req.file
-      ? `/uploads/${req.file.filename}`
-      : "/uploads/default_icon.png";
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    await db.registerAccount(
-      full_name,
-      username,
-      display_name,
-      email,
-      hashedPassword,
-      false,
-      false,
-      "offline",
-      pfp_path,
-      bio,
+    const [posts] = await pool.query(
+      "SELECT server_id FROM posts WHERE post_id = ?",
+      [postId],
     );
 
-    res.redirect("/login");
-  } catch (err) {
-    console.error("User registration failed:", err);
-    return res.redirect("/register");
-  }
-});
-
-app.post("/create_server", upload.single("pfp"), async (req, res) => {
-  try {
-    const pfp_path = req.file
-      ? `/uploads/${req.file.filename}`
-      : "/uploads/default_icon.png";
-
-    const serverLink = crypto.randomBytes(8).toString("hex");
-
-    const isPrivate = req.body.pub_priv === "private_choice" ? 1 : 0;
-
-    let inviteLink;
-
-    if (isPrivate == 1) {
-      inviteLink = crypto.randomBytes(8).toString("hex");
-    } else {
-      inviteLink = null;
+    if (posts.length === 0) {
+      return res.redirect("/home");
     }
 
-    const data = {
-      name: req.body.server_name,
-      short_name: req.body.short_name,
-      server_picture_url: pfp_path,
-      private: isPrivate,
-      server_link: serverLink,
-      invite_link: inviteLink,
-      owner: req.session.user.id,
-    };
+    const serverId = posts[0].server_id;
+    const isModerator = await db.isServerModerator(serverId, userId);
 
-    await db.createServer(data);
+    if (!isModerator) {
+      return res.status(403).send("No permission");
+    }
 
-    res.redirect("/home");
+    await pool.query("DELETE FROM posts WHERE post_id = ?", [postId]);
+
+    res.redirect(`/server/${serverId}`);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error creating server");
+    res.status(500).send("Failed to delete post");
   }
 });
 
-app.post("/login", async (req, res) => {
-  const login = req.body.login;
-  const password = req.body.password;
+app.post("/comments/:commentId/delete", isLoggedIn, async (req, res) => {
+  const commentId = req.params.commentId;
+  const serverId = req.body.server_id;
+  const userId = req.session.user.id;
 
-  if (regEmail.test(login) === true) {
-    try {
-      async function loginFunction(login, password) {
-        const foundUserHashedPass = await db.attemptLogin(
-          false,
-          login,
-          password,
-        );
-        return foundUserHashedPass;
-      }
+  try {
+    const isModerator = await db.isServerModerator(serverId, userId);
 
-      const hashedPass = await loginFunction(login, password);
-
-      bcrypt.compare(password, hashedPass, async function (err, bcryptRes) {
-        if (err) {
-          console.log("Password comparison went wrong: ", err);
-          delete req.session;
-          return res.redirect("/login");
-        }
-        if (bcryptRes) {
-          console.log("Passwords match");
-          const userId = await db.getIdByEmail(login);
-          req.session.user = { id: userId };
-          return res.redirect("/home"); // main chat view
-        } else {
-          console.log("Passwords do not match");
-          delete req.session;
-          return res.redirect("/login");
-        }
-      });
-    } catch (err) {
-      console.log(err);
-      delete req.session;
-      res.redirect("/login");
+    if (!isModerator) {
+      return res.status(403).send("No permission");
     }
-  } else if (regEmail.test(login) === false) {
-    try {
-      async function loginFunction(login, password) {
-        const foundUserHashedPass = await db.attemptLogin(
-          login,
-          false,
-          password,
-        );
-        return foundUserHashedPass;
-      }
 
-      const hashedPass = await loginFunction(login, password);
+    await pool.query("DELETE FROM post_comments WHERE comment_id = ?", [
+      commentId,
+    ]);
 
-      bcrypt.compare(password, hashedPass, async function (err, bcryptRes) {
-        if (err) {
-          console.log("Password comparison went wrong: ", err);
-          delete req.session;
-          return res.redirect("/login");
-        }
-        if (bcryptRes) {
-          console.log("Passwords match");
-          const userId = await db.getIdByUsername(login);
-          req.session.user = { id: userId };
-          return res.redirect("/home"); // main chat view
-        } else {
-          console.log("Passwords do not match");
-          delete req.session;
-          return res.redirect("/login");
-        }
-      });
-    } catch (err) {
-      console.log(err);
-      delete req.session;
-      res.redirect("/login");
-    }
+    res.redirect(`/server/${serverId}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Failed to delete comment");
   }
 });
 
-server.listen(port, host, (req, res) => {
+app.post(
+  "/servers/:serverId/members/:memberId/delete",
+  isLoggedIn,
+  async (req, res) => {
+    const serverId = req.params.serverId;
+    const memberId = req.params.memberId;
+    const userId = req.session.user.id;
+
+    try {
+      const isModerator = await db.isServerModerator(serverId, userId);
+
+      if (!isModerator) {
+        return res.status(403).send("No permission");
+      }
+
+      await pool.query(
+        `
+        DELETE FROM member_list
+        WHERE server_id = ?
+        AND user_id = ?
+        AND owner = 0
+        `,
+        [serverId, memberId],
+      );
+
+      res.redirect(`/server/${serverId}`);
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Failed to remove member");
+    }
+  },
+);
+
+app.post(
+  "/servers/:serverId/members/:memberId/promote",
+  isLoggedIn,
+  async (req, res) => {
+    const serverId = req.params.serverId;
+    const memberId = req.params.memberId;
+    const userId = req.session.user.id;
+
+    try {
+      const isOwner = await db.isServerOwner(serverId, userId);
+
+      if (!isOwner) {
+        return res.status(403).send("Only owner can promote moderators");
+      }
+
+      await db.promoteMemberToModerator(serverId, memberId);
+
+      res.redirect(`/profile/${memberId}`);
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Failed to promote member");
+    }
+  },
+);
+
+app.get("/profile/:id", isLoggedIn, async (req, res) => {
+  const profileUserId = req.params.id;
+  const currentUserId = req.session.user.id;
+
+  try {
+    const [rows] = await pool.query(
+      `
+      SELECT 
+        user_id,
+        full_name,
+        username,
+        display_name,
+        email,
+        creation_date,
+        status,
+        avatar_url,
+        bio,
+        reputation
+      FROM users
+      WHERE user_id = ?
+      `,
+      [profileUserId],
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).send("User not found");
+    }
+
+    const [roles] = await pool.query(
+      `
+      SELECT
+        server.server_id,
+        server.name AS server_name,
+        member_list.owner,
+        member_list.moderator,
+        (
+          SELECT ml2.owner
+          FROM member_list ml2
+          WHERE ml2.server_id = server.server_id
+          AND ml2.user_id = ?
+          LIMIT 1
+        ) AS current_user_owner
+      FROM member_list
+      JOIN server ON server.server_id = member_list.server_id
+      WHERE member_list.user_id = ?
+      `,
+      [currentUserId, profileUserId],
+    );
+
+    res.render("profile", {
+      profileUser: rows[0],
+      roles,
+      currentUserId,
+      path: req.path,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Failed to load profile");
+  }
+});
+
+app.post(
+  "/servers/:serverId/members/:memberId/demote",
+  isLoggedIn,
+  async (req, res) => {
+    const serverId = req.params.serverId;
+    const memberId = req.params.memberId;
+    const userId = req.session.user.id;
+
+    try {
+      const isOwner = await db.isServerOwner(serverId, userId);
+
+      if (!isOwner) {
+        return res.status(403).send("Only owner can demote moderators");
+      }
+
+      await pool.query(
+        `
+        UPDATE member_list
+        SET moderator = 0
+        WHERE server_id = ?
+        AND user_id = ?
+        AND owner = 0
+        `,
+        [serverId, memberId],
+      );
+
+      res.redirect(`/profile/${memberId}`);
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Failed to demote member");
+    }
+  },
+);
+
+server.listen(port, host, () => {
   console.log(`Server running at http://${host}:${port}`);
 });

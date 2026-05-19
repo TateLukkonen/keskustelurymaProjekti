@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        <%= profileUser.display_name %>
+    </title>
+
+    <link rel="stylesheet" href="/styles/basic.css">
+    <link rel="stylesheet" href="/styles/profile.css">
+</head>
+
+<body>
+    <%- include("header") %>
+
+        <main class="profile-page">
+            <section class="profile-card">
+
+                <div class="profile-top">
+                    <img class="profile-avatar" src="<%= profileUser.avatar_url || '/uploads/default_icon.png' %>"
+                        alt="Avatar">
+
+                    <h1>
+                        <%= profileUser.display_name %>
+                    </h1>
+
+                    <p class="username">
+                        @<%= profileUser.username %>
+                    </p>
+                </div>
+
+                <div class="profile-info">
+
+                    <div class="info-row">
+                        <span class="info-label">Full name</span>
+                        <span class="info-value">
+                            <%= profileUser.full_name %>
+                        </span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">Status</span>
+                        <span class="info-value">
+                            <%= profileUser.status %>
+                        </span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">Bio</span>
+                        <span class="info-value">
+                            <%= profileUser.bio || "No bio" %>
+                        </span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">Reputation</span>
+                        <span class="info-value">
+                            <%= profileUser.reputation || 0 %>
+                        </span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">Joined</span>
+                        <span class="info-value">
+                            <%= profileUser.creation_date ? profileUser.creation_date.toLocaleDateString() : "" %>
+                        </span>
+                    </div>
+
+                    <div class="info-row roles-row">
+                        <span class="info-label">Server roles</span>
+
+                        <% if (roles && roles.length> 0) { %>
+                            <div class="roles-list">
+
+                                <% roles.forEach(role=> { %>
+                                    <div class="role-item">
+
+                                        <div class="role-left">
+                                            <span class="server-name">
+                                                <%= role.server_name %>
+                                            </span>
+
+                                            <% if (role.owner==1) { %>
+                                                <span class="role-badge owner">Owner</span>
+                                                <% } else if (role.moderator==1) { %>
+                                                    <span class="role-badge mod">Moderator</span>
+                                                    <% } else { %>
+                                                        <span class="role-badge member">Member</span>
+                                                        <% } %>
+                                        </div>
+
+                                        <% if (role.current_user_owner==1 && profileUser.user_id !=currentUserId &&
+                                            role.owner !=1) { %>
+                                            <div class="role-actions">
+
+                                                <% if (role.moderator==1) { %>
+                                                    <form method="post"
+                                                        action="/servers/<%= role.server_id %>/members/<%= profileUser.user_id %>/demote"
+                                                        class="role-form">
+                                                        <button type="submit" class="demote-btn">
+                                                            Demote
+                                                        </button>
+                                                    </form>
+                                                    <% } else { %>
+                                                        <form method="post"
+                                                            action="/servers/<%= role.server_id %>/members/<%= profileUser.user_id %>/promote"
+                                                            class="role-form">
+                                                            <button type="submit" class="promote-btn">
+                                                                Promote
+                                                            </button>
+                                                        </form>
+                                                        <% } %>
+
+                                            </div>
+                                            <% } %>
+
+                                    </div>
+                                    <% }) %>
+
+                            </div>
+                            <% } else { %>
+                                <span class="info-value">No servers</span>
+                                <% } %>
+                    </div>
+
+                </div>
+
+                <a href="javascript:history.back()" class="back-btn">
+                    Go back
+                </a>
+
+            </section>
+        </main>
+</body>
+
+</html>
