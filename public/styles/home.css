@@ -210,7 +210,7 @@ header {
   object-fit: cover;
   border-radius: 8px;
   margin-right: 10px;
-  flex-shrink: 0; /* Estää kuvaa lytistymästä */
+  flex-shrink: 0;
 }
 
 .server-card:hover {
@@ -247,16 +247,43 @@ header {
   outline: 3px solid #95a5a6;
 }
 
-.display-name-wrap {
+.display-name-wrap form {
   display: flex;
-  flex-flow: row nowrap;
+  align-items: center;
+  gap: 10px;
 }
 
-p.display-name {
-  display: flex;
-  flex-flow: row nowrap;
+.display-name-wrap input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 2px solid #3a5168;
 }
 
+.display-name-wrap button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 10px;
+  background: #1abc9c;
+  color: white;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.pfp-group button {
+  width: fit-content;
+
+  padding: 8px 12px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: #1abc9c;
+  color: white;
+
+  cursor: pointer;
+}
 
 .pfp-group {
   display: grid;
@@ -300,9 +327,6 @@ input[type="file"] {
   cursor: pointer;
   padding: 10px;
 }
-
-
-
 
 @media (max-width: 768px) {
   .container {
