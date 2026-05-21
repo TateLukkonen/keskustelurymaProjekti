@@ -349,13 +349,51 @@ app.post("/update_display_name", isLoggedIn, async (req, res) => {
   try {
     const newName = req.body.display_name;
     const userId = req.session.user.id;
+    if (newName.length === 0) {
+      console.log('0 length');
+      const userInfo = await db.getCurrentSessionUser(userId)
 
-    await db.updateDisplayName(newName, userId);
+      await db.updateDisplayName(userInfo[0].username, userId)
+    }
+    else {
+      await db.updateDisplayName(newName, userId);
+    }
 
     res.redirect("/home");
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error changing display name");
+    res.status(500).send("Error updatings display name");
+  }
+});
+
+app.post("/update_bio", isLoggedIn, async (req, res) => {
+  try {
+    const newBio = req.body.bio;
+    const userId = req.session.user.id;
+
+    await db.updateBio(newBio, userId);
+
+    res.redirect("/home");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error updating bio");
+  }
+});
+
+app.post("/update_pfp", isLoggedIn, upload.single('pfp'), async (req, res) => {
+  try {
+    const pfpPath = req.file
+      ? `/uploads/${req.file.filename}`
+      : "/uploads/default_icon.png";
+
+    const userId = req.session.user.id;
+
+    await db.updatePfp(pfpPath, userId);
+
+    res.redirect("/home");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error updating pfp");
   }
 });
 

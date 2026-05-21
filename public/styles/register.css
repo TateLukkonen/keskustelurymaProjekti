@@ -116,7 +116,7 @@ input[type="file"] {
   padding: 10px;
 }
 
-button {
+button.register {
   width: 100%;
   margin-top: 22px;
   border: 0;
@@ -130,7 +130,7 @@ button {
   transition: 0.15s;
 }
 
-button:hover {
+button.register:hover {
   background: #b45cff;
   transform: translateY(-1px);
 }

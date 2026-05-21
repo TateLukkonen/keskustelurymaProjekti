@@ -6,7 +6,7 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-
+    <link rel="shortcut icon" href="/uploads/kaverilounge_favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="/styles/home.css">
     <link rel="stylesheet" href="/styles/basic.css">
 </head>
@@ -20,30 +20,41 @@
         <section class="top-section">
 
             <div class="left-info">
-                <h2>Username: @<%= user.username %></h2>
-
-                <div>
+                <div class="display-name-wrap">
                     <p class="display-name">
                         Display name: 
                     </p>
 
-                    <form action="/update_display_name" method="POST">
-                        <input type="text" name="display_name" placeholder="<%= user.display_name %>">
-                        <button type="submit">Save changes</button>
+                    <form class="display-name" action="/update_display_name" method="POST">
+                        <textarea
+                            name="display_name"
+                            placeholder="<%= user.username %>"
+                            rows="1"
+                        ><%= user.display_name %></textarea>
+                        <button type="submit">Save Display Name</button>
                     </form>
                 </div>
 
-                <div class="status">
-                    <span>Status:</span>
-                    <span class="<%= user.status %>"></span>
-                </div>
+                <form class="pfp-group" action="/update_pfp" method="post" enctype="multipart/form-data">
+                    <label>Picture max 512KB</label>
+
+                    <div class="image-frame">
+                        <img id="preview" src="#" alt="Preview">
+                        <span id="placeholder">No Image</span>
+                    </div>
+
+                    <input type="file" id="pfp_input" name="pfp" accept="image/*">
+
+                    <button type="submit">Save Avatar</button>
+                </form>
+
             </div>
 
             <div class="profile-center">
 
                 <h2><%= user.display_name %></h2>
 
-                <h4><%= user.username %></h4>
+                <h4>@<%= user.username %></h4>
 
                 <div class="profile-pic">
                     <img 
@@ -57,14 +68,12 @@
             <div class="bio">
     <h3>Bio</h3>
 
-    <p><%= user.bio || "No bio yet..." %></p>
-
     <form action="/update_bio" method="POST">
         <textarea
             name="bio"
             placeholder="Write your bio here..."
             rows="4"
-        ><%= user.bio || "" %></textarea>
+        ><%= user.bio || "No bio yet..." %></textarea>
 
         <button type="submit">Save Bio</button>
     </form>
@@ -95,7 +104,38 @@
 
         </section>
 
+        <img class="overlay-kl" src="/uploads/1779132442751-kaverilounge_logo.png"></img>
+
     </div>
 
+    <script>
+      const pfpInput = document.getElementById("pfp_input");
+      const preview = document.getElementById("preview");
+      const placeholder = document.getElementById("placeholder");
+
+      pfpInput.addEventListener("change", function () {
+        const file = this.files[0];
+
+        if (file) {
+          if (file.size > 524288) {
+            alert("File too big! Max 512KB.");
+            this.value = "";
+            preview.style.display = "none";
+            placeholder.style.display = "block";
+            return;
+          }
+
+          const reader = new FileReader();
+
+          reader.onload = function (e) {
+            preview.src = e.target.result;
+            preview.style.display = "block";
+            placeholder.style.display = "none";
+          };
+
+          reader.readAsDataURL(file);
+        }
+      });
+    </script>
 </body>
 </html>

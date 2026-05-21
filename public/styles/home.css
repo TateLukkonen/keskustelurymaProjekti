@@ -45,7 +45,7 @@ header {
 .bio,
 .server-toggle button,
 .server-card .icon {
-  background: #283848;
+  background: rgb(40, 56, 72);
 }
 
 .bio {
@@ -103,7 +103,7 @@ header {
   padding: 10px;
   border-radius: 12px;
   color: whitesmoke;
-  background-color: #283848;
+  background-color: rgba(40, 56, 72, 0.7);
   border: 3px solid #3a5168;
 }
 
@@ -246,6 +246,63 @@ header {
   background: gray;
   outline: 3px solid #95a5a6;
 }
+
+.display-name-wrap {
+  display: flex;
+  flex-flow: row nowrap;
+}
+
+p.display-name {
+  display: flex;
+  flex-flow: row nowrap;
+}
+
+
+.pfp-group {
+  display: grid;
+  gap: 9px;
+}
+
+.pfp-group label {
+  color: #f59e0b;
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.image-frame {
+  width: 115px;
+  height: 115px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 2px dashed rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.image-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+#placeholder {
+  color: #cbd5e1;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+input[type="file"] {
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+  cursor: pointer;
+  padding: 10px;
+}
+
+
+
 
 @media (max-width: 768px) {
   .container {

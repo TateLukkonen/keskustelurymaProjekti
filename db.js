@@ -485,6 +485,32 @@ const updateDisplayName = async (new_name, user_id) => {
   connection.release();
 };
 
+const updateBio = async (new_bio, user_id) => {
+  const connection = await getConnection();
+
+  const sql = `
+    UPDATE users 
+    SET bio = ? 
+    WHERE user_id = ?
+  `;
+
+  await connection.execute(sql, [new_bio, user_id]);
+  connection.release();
+};
+
+const updatePfp = async (new_url, user_id) => {
+  const connection = await getConnection();
+
+  const sql = `
+    UPDATE users 
+    SET avatar_url = ? 
+    WHERE user_id = ?
+  `;
+
+  await connection.execute(sql, [new_url, user_id]);
+  connection.release();
+};
+
 const getMemberList = async (server_id) => {
   const connection = await getConnection();
 
@@ -630,6 +656,8 @@ export default {
   getServerById,
   getJoinedServers,
   updateDisplayName,
+  updateBio,
+  updatePfp,
   getMemberList,
   countMembers,
   votePost,

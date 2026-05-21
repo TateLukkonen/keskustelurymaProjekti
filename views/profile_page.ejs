@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Home</title>
-
+    <link rel="shortcut icon" href="/uploads/kaverilounge_favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="/styles/home.css">
     <link rel="stylesheet" href="/styles/basic.css">
 </head>
@@ -33,7 +33,7 @@
 
                 <h2><%= user.display_name %></h2>
 
-                <h4><%= user.username %></h4>
+                <h4>@<%= user.username %></h4>
 
                 <div class="profile-pic">
                     <img src="<%= user.avatar_url || '/uploads/default_icon.png' %>" alt="PFP">
