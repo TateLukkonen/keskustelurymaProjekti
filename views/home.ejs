@@ -20,20 +20,20 @@
         <section class="top-section">
 
             <div class="left-info">
-                <div class="display-name-wrap">
-                    <p class="display-name">
-                        Display name: 
-                    </p>
+               <div class="display-name-wrap">
+  <label>Display name:</label>
 
-                    <form class="display-name" action="/update_display_name" method="POST">
-                        <textarea
-                            name="display_name"
-                            placeholder="<%= user.username %>"
-                            rows="1"
-                        ><%= user.display_name %></textarea>
-                        <button type="submit">Save Display Name</button>
-                    </form>
-                </div>
+  <form action="/update_display_name" method="POST">
+    <input
+      type="text"
+      name="display_name"
+      value="<%= user.display_name || '' %>"
+      placeholder="<%= user.username %>"
+    >
+
+    <button>Save Display Name</button>
+  </form>
+</div>
 
                 <form class="pfp-group" action="/update_pfp" method="post" enctype="multipart/form-data">
                     <label>Picture max 512KB</label>
