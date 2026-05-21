@@ -721,10 +721,13 @@ app.get("/profile/:id", isLoggedIn, async (req, res) => {
       [currentUserId, profileUserId],
     );
 
+    const reputation = await db.getUserReputation(req.params.id)
+
     res.render("profile", {
       profileUser: rows[0],
       roles,
       currentUserId,
+      reputation,
       path: req.path,
     });
   } catch (err) {

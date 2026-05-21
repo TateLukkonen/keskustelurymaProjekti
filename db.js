@@ -639,6 +639,23 @@ const getMember = async (user_id) => {
   return info[0]
 }
 
+const getUserReputation = async (user_id) => {
+  const connection = await getConnection()
+
+  const sql = `
+    SELECT 
+      SUM(post_votes.vote = 'upvote') AS upvotes,
+      SUM(post_votes.vote = 'downvote') AS downvotes
+    FROM post_votes
+    JOIN posts ON posts.post_id = post_votes.post_id
+    WHERE posts.user_id = ?
+  `
+  const [reputation] = await connection.execute(sql, [user_id])
+  connection.release()
+
+  return reputation[0]
+}
+
 export default {
   getChannelMessages,
   getChannelMessage,
@@ -666,5 +683,6 @@ export default {
   isServerOwner,
   promoteMemberToModerator,
   getPost,
-  getMember
+  getMember,
+  getUserReputation
 };
