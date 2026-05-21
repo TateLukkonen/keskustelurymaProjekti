@@ -18,7 +18,7 @@ Omat vastuut
 Tate: Minä tein pääosin ryhmien luomisen ja selauksen mutta tein myös pienempiä bugi korjauksia. Tein myös Eliaksen kanssa moderointityökalut.
 Nicolas:
 Elias:
-Noah:
+Noah: Minä tein rautalankamallia ja suunnittelua. Tein homepage.ejs ja tein sen css ja media sscreen. Korjasin myös tyyli bugit ja näytin ne muille ryhmäläisille.
 Eero: Mitä tein sivujen rangat ja suunnitelua. Tein myös post toiminnon eliaksen kanssa sekä katsoin kaikki sivun bugit ja reportoin niistä tiimille.
 
 ---
