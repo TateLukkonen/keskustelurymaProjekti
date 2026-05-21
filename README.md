@@ -2,8 +2,26 @@ Velchat
 
 Velchat on nettissä oleva forum jossa käyttäjät voivat puhua toisilleen ryhmien ja postauksien kautta. Kun liityt/luot ryhmän käyttäjät voivat tehdä postauksia, kommentoida postauksiin ja äänestää jos tykkää tai ei tykkää postauksesta.
 
-![alt text](./READMEimgs/image-1.png)
-![alt text](./READMEimgs/image.png)
+Account creation
+![alt text](./READMEimgs/account_creation.png)
+
+Login
+![alt text](./READMEimgs/login.png)
+
+Kotisivu
+![alt text](./READMEimgs/home_page.png)
+
+Group creation
+![alt text](./READMEimgs/group_creation.png)
+
+Postaus
+![alt text](./READMEimgs/post_creation.png)
+
+Ryhmä ja postaukset
+![alt text](./READMEimgs/server_posts.png)
+
+In-server profiili sivu
+![alt text](./READMEimgs/inserver_profile_page.png)
 
 ---
 
@@ -16,9 +34,13 @@ Käytettiin chatgpt ja claude virheiden korjauksessa jos sitä ei osattu itse se
 Omat vastuut
 
 Tate: Minä tein pääosin ryhmien luomisen ja selauksen mutta tein myös pienempiä bugi korjauksia. Tein myös Eliaksen kanssa moderointityökalut.
-Nicolas:
+
+Nicolas: Minä tein paljon backend-työtä, kuten reaaliaikaisen äänestyksen toteuttamisen Socket.io:n avulla, tietokannan suunnittelun ja luomisen. Projektin edetessä tietokantaa päivitettiin ja uudistettiin useaan otteeseen. Tein myös rautalankamallinnusta, loin oletusikkunan, suunnittelin CSS-tyylejä sekä toteutin käyttäjän kirjautumisen ja rekisteröitymisen backend-puolen.
+
 Elias:
+
 Noah: Minä tein rautalankamallia ja suunnittelua. Tein homepage.ejs ja tein sen css ja media sscreen. Korjasin myös tyyli bugit ja näytin ne muille ryhmäläisille.
+
 Eero: Mitä tein sivujen rangat ja suunnitelua. Tein myös post toiminnon eliaksen kanssa sekä katsoin kaikki sivun bugit ja reportoin niistä tiimille.
 
 ---
