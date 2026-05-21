@@ -64,36 +64,46 @@
         const placeholder = document.getElementById("placeholder");
 
         input.addEventListener("change", function () {
-
             const file = this.files[0];
 
             if (!file) {
-                preview.removeAttribute("src");
-                preview.style.display = "none";
-                placeholder.style.display = "block";
-                return;
+            preview.style.display = "none";
+            placeholder.style.display = "block";
+            return;
             }
 
-            preview.src = URL.createObjectURL(file);
+            if (file.size > 524288) {
+            alert("File too big! Max 512KB.");
+            this.value = "";
 
+            preview.style.display = "none";
+            placeholder.style.display = "block";
+            return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+            preview.src = e.target.result;
             preview.style.display = "block";
-
             placeholder.style.display = "none";
+            };
+
+            reader.readAsDataURL(file);
         });
 
         const form = document.getElementById("serverForm");
         const shortNameInput = document.querySelector('input[name="short_name"]');
 
         form.addEventListener("submit", function (e) {
-          const value = shortNameInput.value.trim();
-        
-          if (value.length > 8) {
+            const value = shortNameInput.value.trim();
+
+            if (value.length > 8) {
             e.preventDefault();
             alert("Display name must be 8 characters or less");
-          }
+            }
         });
     </script>
-
 </body>
 
 </html>
