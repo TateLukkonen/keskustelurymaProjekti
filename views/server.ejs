@@ -7,7 +7,7 @@
     <title>
         <%= serverName || "Posts" %>
     </title>
-
+    <link rel="shortcut icon" href="/uploads/kaverilounge_favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="/styles/posts.css">
     <link rel="stylesheet" href="/styles/basic.css">
     <link rel="stylesheet" href="/styles/channel.css">
@@ -228,6 +228,9 @@
 
                         <%- include("member_list", { data: members || [], isModerator, serverId, userId }) %>
                     </div>
+
+                    <img class="overlay-kl" src="/uploads/1779132442751-kaverilounge_logo.png"></img>
+
 
             </div>
 

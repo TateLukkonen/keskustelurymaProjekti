@@ -107,13 +107,8 @@ export async function createServer(data) {
   const connection = await getConnection();
 
   const sql = `
-<<<<<<< HEAD
-    INSERT INTO server (name, short_name, private, server_link, invite_link, creation_date, server_picture_irl)
-    VALUES (?, ?, ?, ?, ?, NOW(), ?)
-=======
     INSERT INTO server (name, short_name, private, server_link, invite_link, server_picture_url, creation_date)
     VALUES (?, ?, ?, ?, ?, ?, NOW())
->>>>>>> f3939aa2602c593459b8cd312f2739c1b05b1fe3
   `;
 
   const [result] = await connection.execute(sql, [
@@ -122,11 +117,7 @@ export async function createServer(data) {
     data.private,
     data.server_link,
     data.invite_link,
-<<<<<<< HEAD
-    data.server_picture_link,
-=======
     data.server_picture_url,
->>>>>>> f3939aa2602c593459b8cd312f2739c1b05b1fe3
   ]);
 
   const serverId = result.insertId;
@@ -494,6 +485,32 @@ const updateDisplayName = async (new_name, user_id) => {
   connection.release();
 };
 
+const updateBio = async (new_bio, user_id) => {
+  const connection = await getConnection();
+
+  const sql = `
+    UPDATE users 
+    SET bio = ? 
+    WHERE user_id = ?
+  `;
+
+  await connection.execute(sql, [new_bio, user_id]);
+  connection.release();
+};
+
+const updatePfp = async (new_url, user_id) => {
+  const connection = await getConnection();
+
+  const sql = `
+    UPDATE users 
+    SET avatar_url = ? 
+    WHERE user_id = ?
+  `;
+
+  await connection.execute(sql, [new_url, user_id]);
+  connection.release();
+};
+
 const getMemberList = async (server_id) => {
   const connection = await getConnection();
 
@@ -639,6 +656,8 @@ export default {
   getServerById,
   getJoinedServers,
   updateDisplayName,
+  updateBio,
+  updatePfp,
   getMemberList,
   countMembers,
   votePost,
