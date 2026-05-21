@@ -2,8 +2,8 @@ Velchat
 
 Velchat on nettissä oleva forum jossa käyttäjät voivat puhua toisilleen ryhmien ja postauksien kautta. Kun liityt/luot ryhmän käyttäjät voivat tehdä postauksia, kommentoida postauksiin ja äänestää jos tykkää tai ei tykkää postauksesta.
 
-![alt text](image-1.png)
-![alt text](image.png)
+![alt text](./READMEimgs/image-1.png)
+![alt text](./READMEimgs/image.png)
 
 ---
 
