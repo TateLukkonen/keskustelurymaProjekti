@@ -37,7 +37,7 @@ Tate: Minä tein pääosin ryhmien luomisen ja selauksen mutta tein myös pienem
 
 Nicolas: Minä tein paljon backend-työtä, kuten reaaliaikaisen äänestyksen toteuttamisen Socket.io:n avulla, tietokannan suunnittelun ja luomisen. Projektin edetessä tietokantaa päivitettiin ja uudistettiin useaan otteeseen. Tein myös rautalankamallinnusta, loin oletusikkunan, suunnittelin CSS-tyylejä sekä toteutin käyttäjän kirjautumisen ja rekisteröitymisen backend-puolen.
 
-Elias:
+Elias: Tein server.ejs sivun css + responsivisuus  ja tein myös backend juttui esim kick ja poista ja profile view.ejs. myös vähän rauta lanka mallia.
 
 Noah: Minä tein rautalankamallia ja suunnittelua. Tein homepage.ejs ja tein sen css ja media sscreen. Korjasin myös tyyli bugit ja näytin ne muille ryhmäläisille.
 
